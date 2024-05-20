@@ -330,6 +330,33 @@ func printData(data *Data) {
 				if call.ExpectedDepartureTime != "" {
 					fmt.Println("RecordedCall ExpectedDepartureTime:", call.ExpectedDepartureTime)
 				}
+
+				jsonObjectRC := make(map[string]interface{})
+
+				if call.StopPointName != "" {
+					jsonObjectRC["StopPointName"] = call.StopPointName
+				}
+				if call.ArrivalPlatformName != "" {
+					jsonObjectRC["ArrivalPlatformName"] = call.ArrivalPlatformName
+				}
+				if call.DeparturePlatformName != "" {
+					jsonObjectRC["DeparturePlatformName"] = call.DeparturePlatformName
+				}
+				if call.PredictionInaccurate != "" {
+					jsonObjectRC["PredictionInaccurate"] = call.PredictionInaccurate
+				}
+				if call.Occupancy != "" {
+					jsonObjectRC["Occupancy"] = call.Occupancy
+				}
+
+				// Convert the JSON object to a JSON string
+				jsonString, err := json.Marshal(jsonObjectRC)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				// Print the JSON string for the current journey
+				fmt.Println(string(jsonString))
 			}
 		}
 		for _, estimatedCall := range journey.EstimatedCalls {
