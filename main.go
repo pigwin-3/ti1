@@ -81,7 +81,7 @@ type Data struct {
 					FramedVehicleJourneyRef struct {
 						DataFrameRef           string `xml:"DataFrameRef"`
 						DatedVehicleJourneyRef string `xml:"DatedVehicleJourneyRef"`
-					} `xml:"FramedyfguVehicleJourneyRef"`
+					} `xml:"FramedVehicleJourneyRef"`
 					Cancellation                string `xml:"Cancellation"`
 					JourneyPatternRef           string `xml:"JourneyPatternRef"`
 					JourneyPatternName          string `xml:"JourneyPatternName"`
@@ -130,7 +130,7 @@ type Data struct {
 
 func main() {
 	// Fetch data from entur
-	resp, err := http.Get("https://api.entur.io/realtime/v1/rest/et?maxSize=50")
+	resp, err := http.Get("https://api.entur.io/realtime/v1/rest/et?maxSize=5")
 	if err != nil {
 		log.Fatal(err)
 	}
