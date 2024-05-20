@@ -305,7 +305,30 @@ func printData(data *Data) {
 			for _, call := range recordedCall.RecordedCall {
 				if call.StopPointRef != "" {
 					fmt.Println("RecordedCall StopPointRef:", call.StopPointRef)
+				}
+				if call.Order != "" {
 					fmt.Println("RecordedCall Order:", call.Order)
+				}
+				if call.Cancellation != "" {
+					fmt.Println("RecordedCall Cancellation:", call.Cancellation)
+				}
+				if call.AimedDepartureTime != "" {
+					fmt.Println("RecordedCall AimedDepartureTime:", call.AimedDepartureTime)
+				}
+				if call.ActualDepartureTime != "" {
+					fmt.Println("RecordedCall ActualDepartureTime:", call.ActualDepartureTime)
+				}
+				if call.AimedArrivalTime != "" {
+					fmt.Println("RecordedCall AimedArrivalTime:", call.AimedArrivalTime)
+				}
+				if call.ActualArrivalTime != "" {
+					fmt.Println("RecordedCall ActualArrivalTime:", call.ActualArrivalTime)
+				}
+				if call.ExpectedArrivalTime != "" {
+					fmt.Println("RecordedCall ExpectedArrivalTime:", call.ExpectedArrivalTime)
+				}
+				if call.ExpectedDepartureTime != "" {
+					fmt.Println("RecordedCall ExpectedDepartureTime:", call.ExpectedDepartureTime)
 				}
 			}
 		}
