@@ -363,8 +363,39 @@ func printData(data *Data) {
 			for _, call := range estimatedCall.EstimatedCall {
 				if call.StopPointRef != "" {
 					fmt.Println("EstimatedCall StopPointRef:", call.StopPointRef)
+				}
+				if call.Order != "" {
 					fmt.Println("EstimatedCall Order:", call.Order)
 				}
+				if call.Cancellation != "" {
+					fmt.Println("EstimatedCall Cancellation:", call.Cancellation)
+				}
+				if call.AimedDepartureTime != "" {
+					fmt.Println("EstimatedCall AimedDepartureTime:", call.AimedDepartureTime)
+				}
+				if call.AimedArrivalTime != "" {
+					fmt.Println("EstimatedCall AimedArrivalTime:", call.AimedArrivalTime)
+				}
+				if call.ExpectedArrivalTime != "" {
+					fmt.Println("EstimatedCall ExpectedArrivalTime:", call.ExpectedArrivalTime)
+				}
+				if call.ExpectedDepartureTime != "" {
+					fmt.Println("EstimatedCall ExpectedDepartureTime:", call.ExpectedDepartureTime)
+				}
+
+				jsonObjectEC := make(map[string]interface{})
+				if call.StopPointName != "" {
+					jsonObjectEC["StopPointName"] = call.StopPointName
+				}
+
+				jsonString, err := json.Marshal(jsonObjectEC)
+
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				fmt.Println(string(jsonString))
+
 			}
 		}
 
