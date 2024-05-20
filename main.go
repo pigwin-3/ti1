@@ -130,7 +130,7 @@ type Data struct {
 
 func main() {
 	// Fetch data from entur
-	resp, err := http.Get("https://api.entur.io/realtime/v1/rest/et?maxSize=1")
+	resp, err := http.Get("https://api.entur.io/realtime/v1/rest/et?maxSize=50")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -195,114 +195,105 @@ func printData(data *Data) {
 			fmt.Println(journey.Cancellation)
 		}
 
-		// Create a slice to hold the JSON objects
-		var jsonArray []map[string]interface{}
+		// Create a map to hold the JSON object for the current journey
+		jsonObject := make(map[string]interface{})
 
-		// Iterate over the EstimatedVehicleJourney slice
-		for _, journey := range data.ServiceDelivery.EstimatedTimetableDelivery[0].EstimatedJourneyVersionFrame.EstimatedVehicleJourney {
-			// Create a map to hold the JSON object
-			jsonObject := make(map[string]interface{})
-
-			// Check if OriginName exists and add it to the JSON object
-			if journey.OriginName != "" {
-				jsonObject["OriginName"] = journey.OriginName
-			}
-
-			if journey.DestinationName != "" {
-				jsonObject["DestinationName"] = journey.DestinationName
-			}
-
-			if journey.ProductCategoryRef != "" {
-				jsonObject["ProductCategoryRef"] = journey.ProductCategoryRef
-			}
-
-			if journey.ServiceFeatureRef != "" {
-				jsonObject["ServiceFeatureRef"] = journey.ServiceFeatureRef
-			}
-
-			if journey.Monitored != "" {
-				jsonObject["Monitored"] = journey.Monitored
-			}
-
-			if journey.JourneyPatternRef != "" {
-				jsonObject["JourneyPatternRef"] = journey.JourneyPatternRef
-			}
-
-			if journey.JourneyPatternName != "" {
-				jsonObject["JourneyPatternName"] = journey.JourneyPatternName
-			}
-
-			if journey.PublishedLineName != "" {
-				jsonObject["PublishedLineName"] = journey.PublishedLineName
-			}
-
-			if journey.DirectionName != "" {
-				jsonObject["DirectionName"] = journey.DirectionName
-			}
-
-			if journey.OriginAimedDepartureTime != "" {
-				jsonObject["OriginAimedDepartureTime"] = journey.OriginAimedDepartureTime
-			}
-
-			if journey.DestinationAimedArrivalTime != "" {
-				jsonObject["DestinationAimedArrivalTime"] = journey.DestinationAimedArrivalTime
-			}
-
-			if journey.BlockRef != "" {
-				jsonObject["BlockRef"] = journey.BlockRef
-			}
-
-			if journey.VehicleJourneyRef != "" {
-				jsonObject["VehicleJourneyRef"] = journey.VehicleJourneyRef
-			}
-
-			if journey.Occupancy != "" {
-				jsonObject["Occupancy"] = journey.Occupancy
-			}
-
-			if journey.DestinationDisplayAtOrigin != "" {
-				jsonObject["DestinationDisplayAtOrigin"] = journey.DestinationDisplayAtOrigin
-			}
-
-			if journey.ExtraJourney != "" {
-				jsonObject["ExtraJourney"] = journey.ExtraJourney
-			}
-
-			if journey.RouteRef != "" {
-				jsonObject["RouteRef"] = journey.RouteRef
-			}
-
-			if journey.GroupOfLinesRef != "" {
-				jsonObject["GroupOfLinesRef"] = journey.GroupOfLinesRef
-			}
-
-			if journey.ExternalLineRef != "" {
-				jsonObject["ExternalLineRef"] = journey.ExternalLineRef
-			}
-
-			if journey.InCongestion != "" {
-				jsonObject["InCongestion"] = journey.InCongestion
-			}
-
-			if journey.PredictionInaccurate != "" {
-				jsonObject["PredictionInaccurate"] = journey.PredictionInaccurate
-			}
-
-			if journey.JourneyNote != "" {
-				jsonObject["JourneyNote"] = journey.JourneyNote
-			}
-
-			jsonArray = append(jsonArray, jsonObject)
+		// Add relevant fields to the JSON object
+		if journey.OriginName != "" {
+			jsonObject["OriginName"] = journey.OriginName
 		}
 
-		// Convert the JSON array to a JSON string
-		jsonString, err := json.Marshal(jsonArray)
+		if journey.DestinationName != "" {
+			jsonObject["DestinationName"] = journey.DestinationName
+		}
+
+		if journey.ProductCategoryRef != "" {
+			jsonObject["ProductCategoryRef"] = journey.ProductCategoryRef
+		}
+
+		if journey.ServiceFeatureRef != "" {
+			jsonObject["ServiceFeatureRef"] = journey.ServiceFeatureRef
+		}
+
+		if journey.Monitored != "" {
+			jsonObject["Monitored"] = journey.Monitored
+		}
+
+		if journey.JourneyPatternRef != "" {
+			jsonObject["JourneyPatternRef"] = journey.JourneyPatternRef
+		}
+
+		if journey.JourneyPatternName != "" {
+			jsonObject["JourneyPatternName"] = journey.JourneyPatternName
+		}
+
+		if journey.PublishedLineName != "" {
+			jsonObject["PublishedLineName"] = journey.PublishedLineName
+		}
+
+		if journey.DirectionName != "" {
+			jsonObject["DirectionName"] = journey.DirectionName
+		}
+
+		if journey.OriginAimedDepartureTime != "" {
+			jsonObject["OriginAimedDepartureTime"] = journey.OriginAimedDepartureTime
+		}
+
+		if journey.DestinationAimedArrivalTime != "" {
+			jsonObject["DestinationAimedArrivalTime"] = journey.DestinationAimedArrivalTime
+		}
+
+		if journey.BlockRef != "" {
+			jsonObject["BlockRef"] = journey.BlockRef
+		}
+
+		if journey.VehicleJourneyRef != "" {
+			jsonObject["VehicleJourneyRef"] = journey.VehicleJourneyRef
+		}
+
+		if journey.Occupancy != "" {
+			jsonObject["Occupancy"] = journey.Occupancy
+		}
+
+		if journey.DestinationDisplayAtOrigin != "" {
+			jsonObject["DestinationDisplayAtOrigin"] = journey.DestinationDisplayAtOrigin
+		}
+
+		if journey.ExtraJourney != "" {
+			jsonObject["ExtraJourney"] = journey.ExtraJourney
+		}
+
+		if journey.RouteRef != "" {
+			jsonObject["RouteRef"] = journey.RouteRef
+		}
+
+		if journey.GroupOfLinesRef != "" {
+			jsonObject["GroupOfLinesRef"] = journey.GroupOfLinesRef
+		}
+
+		if journey.ExternalLineRef != "" {
+			jsonObject["ExternalLineRef"] = journey.ExternalLineRef
+		}
+
+		if journey.InCongestion != "" {
+			jsonObject["InCongestion"] = journey.InCongestion
+		}
+
+		if journey.PredictionInaccurate != "" {
+			jsonObject["PredictionInaccurate"] = journey.PredictionInaccurate
+		}
+
+		if journey.JourneyNote != "" {
+			jsonObject["JourneyNote"] = journey.JourneyNote
+		}
+
+		// Convert the JSON object to a JSON string
+		jsonString, err := json.Marshal(jsonObject)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		// Print the JSON string
+		// Print the JSON string for the current journey
 		fmt.Println(string(jsonString))
-
 	}
 }
