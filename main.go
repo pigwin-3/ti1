@@ -384,8 +384,76 @@ func printData(data *Data) {
 				}
 
 				jsonObjectEC := make(map[string]interface{})
+
 				if call.StopPointName != "" {
 					jsonObjectEC["StopPointName"] = call.StopPointName
+				}
+				if call.RequestStop != "" {
+					jsonObjectEC["RequestStop"] = call.RequestStop
+				}
+				if call.DepartureStatus != "" {
+					jsonObjectEC["DepartureStatus"] = call.DepartureStatus
+				}
+				if call.DeparturePlatformName != "" {
+					jsonObjectEC["DeparturePlatformName"] = call.DeparturePlatformName
+				}
+				if call.DepartureBoardingActivity != "" {
+					jsonObjectEC["DepartureBoardingActivity"] = call.DepartureBoardingActivity
+				}
+				if call.ArrivalStatus != "" {
+					jsonObjectEC["ArrivalStatus"] = call.ArrivalStatus
+				}
+				if call.ArrivalPlatformName != "" {
+					jsonObjectEC["ArrivalPlatformName"] = call.ArrivalPlatformName
+				}
+				if call.ArrivalBoardingActivity != "" {
+					jsonObjectEC["ArrivalBoardingActivity"] = call.ArrivalBoardingActivity
+				}
+				if call.CallNote != "" {
+					jsonObjectEC["CallNote"] = call.CallNote
+				}
+				if call.DestinationDisplay != "" {
+					jsonObjectEC["DestinationDisplay"] = call.DestinationDisplay
+				}
+				if call.TimingPoint != "" {
+					jsonObjectEC["TimingPoint"] = call.TimingPoint
+				}
+				if call.SituationRef != "" {
+					jsonObjectEC["SituationRef"] = call.SituationRef
+				}
+				if call.PredictionInaccurate != "" {
+					jsonObjectEC["PredictionInaccurate"] = call.PredictionInaccurate
+				}
+				if call.Occupancy != "" {
+					jsonObjectEC["Occupancy"] = call.Occupancy
+				}
+				if call.DepartureStopAssignment.AimedQuayRef != "" {
+					jsonObjectEC["DepartureAimedQuayRef"] = call.DepartureStopAssignment.AimedQuayRef
+				}
+				if call.DepartureStopAssignment.ExpectedQuayRef != "" {
+					jsonObjectEC["DepartureExpectedQuayRef"] = call.DepartureStopAssignment.ExpectedQuayRef
+				}
+				if call.DepartureStopAssignment.ActualQuayRef != "" {
+					jsonObjectEC["DepartureActualQuayRef"] = call.DepartureStopAssignment.ActualQuayRef
+				}
+				if call.Extensions.StopsAtAirport != "" {
+					jsonObjectEC["StopsAtAirport"] = call.Extensions.StopsAtAirport
+				}
+				if call.ArrivalStopAssignment.AimedQuayRef != "" {
+					jsonObjectEC["ArrivalAimedQuayRef"] = call.ArrivalStopAssignment.AimedQuayRef
+				}
+				if call.ArrivalStopAssignment.ExpectedQuayRef != "" {
+					jsonObjectEC["ArrivalExpectedQuayRef"] = call.ArrivalStopAssignment.ExpectedQuayRef
+				}
+				if call.ArrivalStopAssignment.ActualQuayRef != "" {
+					jsonObjectEC["ArrivalActualQuayRef"] = call.ArrivalStopAssignment.ActualQuayRef
+				}
+				if call.ExpectedDeparturePredictionQuality.PredictionLevel != "" {
+					jsonObjectEC["ExpectedDeparturePredictionLevel"] = call.ExpectedDeparturePredictionQuality.PredictionLevel
+				}
+
+				if call.ExpectedArrivalPredictionQuality.PredictionLevel != "" {
+					jsonObjectEC["ExpectedArrivalPredictionLevel"] = call.ExpectedArrivalPredictionQuality.PredictionLevel
 				}
 
 				jsonString, err := json.Marshal(jsonObjectEC)
