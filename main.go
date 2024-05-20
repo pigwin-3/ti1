@@ -130,7 +130,7 @@ type Data struct {
 
 func main() {
 	// Fetch data from entur
-	resp, err := http.Get("https://api.entur.io/realtime/v1/rest/et?maxSize=5")
+	resp, err := http.Get("https://api.entur.io/realtime/v1/rest/et?maxSize=100")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -299,5 +299,24 @@ func printData(data *Data) {
 
 		// Print the JSON string for the current journey
 		fmt.Println(string(jsonString))
+
+		fmt.Println("Calls:")
+		for _, recordedCall := range journey.RecordedCalls {
+			for _, call := range recordedCall.RecordedCall {
+				if call.StopPointRef != "" {
+					fmt.Println("RecordedCall StopPointRef:", call.StopPointRef)
+					fmt.Println("RecordedCall Order:", call.Order)
+				}
+			}
+		}
+		for _, estimatedCall := range journey.EstimatedCalls {
+			for _, call := range estimatedCall.EstimatedCall {
+				if call.StopPointRef != "" {
+					fmt.Println("EstimatedCall StopPointRef:", call.StopPointRef)
+					fmt.Println("EstimatedCall Order:", call.Order)
+				}
+			}
+		}
+
 	}
 }
