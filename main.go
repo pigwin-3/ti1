@@ -287,6 +287,10 @@ func printData(data *Data) {
 			jsonObject["JourneyNote"] = journey.JourneyNote
 		}
 
+		if journey.Via.PlaceName != "" {
+			jsonObject["Via"] = journey.Via.PlaceName
+		}
+
 		// Convert the JSON object to a JSON string
 		jsonString, err := json.Marshal(jsonObject)
 		if err != nil {
