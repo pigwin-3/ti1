@@ -130,7 +130,7 @@ type Data struct {
 
 func main() {
 	// Fetch data from entur
-	resp, err := http.Get("https://api.entur.io/realtime/v1/rest/et?maxSize=100")
+	resp, err := http.Get("https://api.entur.io/realtime/v1/rest/et")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -144,7 +144,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	printData(data)
+	if 1 == 0 {
+		printData(data)
+	}
 
 }
 
