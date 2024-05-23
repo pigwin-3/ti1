@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"ti1/test"
 )
 
 type Data struct {
@@ -143,6 +144,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	test.PrintHello()
 
 	if 1 == 0 {
 		printData(data)
