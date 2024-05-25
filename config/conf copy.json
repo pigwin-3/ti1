@@ -1,0 +1,11 @@
+{
+    "database": {
+        "host": "binders.net",
+        "port": "5432",
+        "user": "ti1",
+        "password": "W7zZTAkVeWs54zQGNka2KgZpusEa68CG",
+        "dbname": "ti1",
+        "sslmode": "disable"
+    },
+    "temp": "value"
+}
