@@ -1,1 +1,11 @@
-just in case i ducked up .gitignore
+{
+    "database": {
+        "host": "localhost",
+        "port": "5432",
+        "user": "postgres",
+        "password": "postgres",
+        "dbname": "ti1",
+        "sslmode": "disable"
+    },
+    "temp": "value"
+}
