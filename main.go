@@ -19,5 +19,5 @@ func main() {
 
 	//log.Printf("Data fetched successfully: %+v", data)
 
-	export.PrintData(data)
+	//export.PrintData(data)
 }

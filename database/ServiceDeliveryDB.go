@@ -10,11 +10,10 @@ func InsertServiceDelivery(db *sql.DB, responseTimestamp string, recordedAtTime 
 	var id int
 
 	err := db.QueryRow("INSERT INTO public.ServiceDelivery (ResponseTimestamp, RecordedAtTime) VALUES ($1, $2) RETURNING ID", responseTimestamp, recordedAtTime).Scan(&id)
-	fmt.Println(err)
 	if err != nil {
+		fmt.Println(err)
 		return 0, err
 	}
-	fmt.Println("ID:", id)
-	fmt.Println("ServiceDelivery inserted successfully!")
+	fmt.Println("ServiceDelivery inserted successfully! (", id, ")")
 	return id, nil
 }
