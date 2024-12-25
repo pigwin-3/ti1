@@ -15,6 +15,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	//export.ExportToCSV(data)
 	export.DBData(data)
 
 	//log.Printf("Data fetched successfully: %+v", data)
