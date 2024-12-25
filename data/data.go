@@ -2,7 +2,9 @@ package data
 
 import (
 	"encoding/xml"
+	"io"
 	"net/http"
+	"time"
 )
 
 type Data struct {
@@ -125,9 +127,49 @@ type Data struct {
 	} `xml:"ServiceDelivery"`
 }
 
-// FetchData function to retrieve data from API
+type rateLimitedReader struct {
+	reader io.ReadCloser
+	bps    int64
+}
+
+func (r *rateLimitedReader) Read(p []byte) (int, error) {
+	start := time.Now()
+	n, err := r.reader.Read(p)
+	elapsed := time.Since(start)
+	expected := time.Duration(int64(n) * int64(time.Second) / r.bps)
+	if elapsed < expected {
+		time.Sleep(expected - elapsed)
+	}
+	return n, err
+}
+
+func (r *rateLimitedReader) Close() error {
+	return r.reader.Close()
+}
+
+type rateLimitedTransport struct {
+	Transport http.RoundTripper
+	BPS       int64
+}
+
+func (t *rateLimitedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	resp, err := t.Transport.RoundTrip(req)
+	if err != nil {
+		return nil, err
+	}
+	resp.Body = &rateLimitedReader{reader: resp.Body, bps: t.BPS}
+	return resp, nil
+}
+
 func FetchData() (*Data, error) {
-	resp, err := http.Get("https://api.entur.io/realtime/v1/rest/et?useOriginalId=true&maxSize=100000")
+	client := &http.Client{
+		Transport: &rateLimitedTransport{
+			Transport: http.DefaultTransport,
+			BPS:       10 * 1000 * 1000, // 10 Mb/s
+		},
+	}
+
+	resp, err := client.Get("https://api.entur.io/realtime/v1/rest/et?useOriginalId=true&maxSize=100000")
 	if err != nil {
 		return nil, err
 	}
