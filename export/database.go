@@ -140,7 +140,9 @@ func DBData(data *data.Data) {
 		if err != nil {
 			fmt.Printf("Error inserting/updating estimated vehicle journey: %v\n", err)
 		} else {
-			fmt.Printf("Action: %s, ID: %d\n", action, id)
+			if 1 == 0 {
+				fmt.Printf("Action: %s, ID: %d\n", action, id)
+			}
 		}
 		for _, estimatedCall := range journey.EstimatedCalls {
 			for _, call := range estimatedCall.EstimatedCall {
@@ -266,7 +268,9 @@ func DBData(data *data.Data) {
 				if err != nil {
 					fmt.Printf("Error inserting/updating estimated call: %v\n", err)
 				} else {
-					fmt.Printf("Action: %s, ID: %d\n", action, id)
+					if 1 == 0 {
+						fmt.Printf("Action: %s, ID: %d\n", action, id)
+					}
 				}
 			}
 		}

@@ -169,7 +169,7 @@ func FetchData() (*Data, error) {
 		},
 	}
 
-	resp, err := client.Get("https://api.entur.io/realtime/v1/rest/et?useOriginalId=true&maxSize=10")
+	resp, err := client.Get("https://api.entur.io/realtime/v1/rest/et?useOriginalId=true&maxSize=100000&requestorId=ti1ASDASDDAAWdfs")
 	if err != nil {
 		return nil, err
 	}

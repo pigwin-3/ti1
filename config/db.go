@@ -48,10 +48,9 @@ func PrintDBConfig() {
 		return
 	}
 
-	fmt.Println("Configuration:", config)
-	fmt.Println("Host:", config.Database.Host)
-	fmt.Println("Port:", config.Database.Port)
-	fmt.Println("User:", config.Database.User)
-	fmt.Println("Database Host:", config.Database.Host)
-	fmt.Println("Database Password:", config.Database.Password)
+	//fmt.Println("Configuration:", config)
+	//fmt.Println("Host:", config.Database.Host)
+	//fmt.Println("Port:", config.Database.Port)
+	fmt.Println("Database User:", config.Database.User)
+	//fmt.Println("Database Password:", config.Database.Password)
 }
