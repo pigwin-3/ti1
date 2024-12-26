@@ -6,6 +6,13 @@ import (
 )
 
 func InsertOrUpdateEstimatedCall(db *sql.DB, values []interface{}) (int, string, error) {
+	// Replace empty strings with nil for timestamp fields
+	for i, v := range values {
+		if str, ok := v.(string); ok && str == "" {
+			values[i] = nil
+		}
+	}
+
 	query := `
         INSERT INTO calls (
             estimatedvehiclejourney, "order", stoppointref,
