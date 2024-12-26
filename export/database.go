@@ -142,19 +142,40 @@ func DBData(data *data.Data) {
 		} else {
 			fmt.Printf("Action: %s, ID: %d\n", action, id)
 		}
-		var estimatedValues []interface{}
 		for _, estimatedCall := range journey.EstimatedCalls {
 			for _, call := range estimatedCall.EstimatedCall {
+				var estimatedValues []interface{}
+
+				//1 estimatedvehiclejourney
 				estimatedValues = append(estimatedValues, id)
+				//2 order
 				estimatedValues = append(estimatedValues, call.Order)
+				//3 stoppointref
 				estimatedValues = append(estimatedValues, call.StopPointRef)
+				//4 aimeddeparturetime
 				estimatedValues = append(estimatedValues, call.AimedDepartureTime)
+				//5 expecteddeparturetime
 				estimatedValues = append(estimatedValues, call.ExpectedDepartureTime)
+				//6 aimedarrivaltime
 				estimatedValues = append(estimatedValues, call.AimedArrivalTime)
+				//7 expectedarrivaltime
 				estimatedValues = append(estimatedValues, call.ExpectedArrivalTime)
+				//8 cancellation
 				estimatedValues = append(estimatedValues, call.Cancellation)
 
+				//9 estimated_data (JSON)
 				estimatedJsonObject := make(map[string]interface{})
+				// data allrady loged
+				if call.ExpectedDepartureTime != "" {
+					estimatedJsonObject["ExpectedDepartureTime"] = call.ExpectedDepartureTime
+				}
+				if call.ExpectedArrivalTime != "" {
+					estimatedJsonObject["ExpectedArrivalTime"] = call.ExpectedArrivalTime
+				}
+				if call.Cancellation != "" {
+					estimatedJsonObject["Cancellation"] = call.Cancellation
+				}
+				// The rest
 				if call.StopPointName != "" {
 					estimatedJsonObject["StopPointName"] = call.StopPointName
 				}
@@ -237,7 +258,11 @@ func DBData(data *data.Data) {
 				for i, v := range estimatedValues {
 					stringValues[i] = fmt.Sprintf("%v", v)
 				}
-				id, action, err := database.InsertOrUpdateEstimatedCall(db, stringValues)
+				interfaceValues := make([]interface{}, len(stringValues))
+				for i, v := range stringValues {
+					interfaceValues[i] = v
+				}
+				id, action, err := database.InsertOrUpdateEstimatedCall(db, interfaceValues)
 				if err != nil {
 					fmt.Printf("Error inserting/updating estimated call: %v\n", err)
 				} else {
