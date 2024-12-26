@@ -142,5 +142,108 @@ func DBData(data *data.Data) {
 		} else {
 			fmt.Printf("Action: %s, ID: %d\n", action, id)
 		}
+		var estimatedValues []interface{}
+		for _, estimatedCall := range journey.EstimatedCalls {
+			for _, call := range estimatedCall.EstimatedCall {
+				estimatedValues = append(estimatedValues, id)
+				estimatedValues = append(estimatedValues, call.Order)
+				estimatedValues = append(estimatedValues, call.StopPointRef)
+				estimatedValues = append(estimatedValues, call.AimedDepartureTime)
+				estimatedValues = append(estimatedValues, call.ExpectedDepartureTime)
+				estimatedValues = append(estimatedValues, call.AimedArrivalTime)
+				estimatedValues = append(estimatedValues, call.ExpectedArrivalTime)
+				estimatedValues = append(estimatedValues, call.Cancellation)
+
+				estimatedJsonObject := make(map[string]interface{})
+				if call.StopPointName != "" {
+					estimatedJsonObject["StopPointName"] = call.StopPointName
+				}
+				if call.RequestStop != "" {
+					estimatedJsonObject["RequestStop"] = call.RequestStop
+				}
+				if call.DepartureStatus != "" {
+					estimatedJsonObject["DepartureStatus"] = call.DepartureStatus
+				}
+				if call.DeparturePlatformName != "" {
+					estimatedJsonObject["DeparturePlatformName"] = call.DeparturePlatformName
+				}
+				if call.DepartureBoardingActivity != "" {
+					estimatedJsonObject["DepartureBoardingActivity"] = call.DepartureBoardingActivity
+				}
+				if call.DepartureStopAssignment.AimedQuayRef != "" {
+					estimatedJsonObject["DepartureStopAssignment.AimedQuayRef"] = call.DepartureStopAssignment.AimedQuayRef
+				}
+				if call.DepartureStopAssignment.ExpectedQuayRef != "" {
+					estimatedJsonObject["DepartureStopAssignment.ExpectedQuayRef"] = call.DepartureStopAssignment.ExpectedQuayRef
+				}
+				if call.DepartureStopAssignment.ActualQuayRef != "" {
+					estimatedJsonObject["DepartureStopAssignment.ActualQuayRef"] = call.DepartureStopAssignment.ActualQuayRef
+				}
+				if call.Extensions.StopsAtAirport != "" {
+					estimatedJsonObject["Extensions.StopsAtAirport"] = call.Extensions.StopsAtAirport
+				}
+				if call.ArrivalStatus != "" {
+					estimatedJsonObject["ArrivalStatus"] = call.ArrivalStatus
+				}
+				if call.ArrivalPlatformName != "" {
+					estimatedJsonObject["ArrivalPlatformName"] = call.ArrivalPlatformName
+				}
+				if call.ArrivalBoardingActivity != "" {
+					estimatedJsonObject["ArrivalBoardingActivity"] = call.ArrivalBoardingActivity
+				}
+				if call.ArrivalStopAssignment.AimedQuayRef != "" {
+					estimatedJsonObject["ArrivalStopAssignment.AimedQuayRef"] = call.ArrivalStopAssignment.AimedQuayRef
+				}
+				if call.ArrivalStopAssignment.ExpectedQuayRef != "" {
+					estimatedJsonObject["ArrivalStopAssignment.ExpectedQuayRef"] = call.ArrivalStopAssignment.ExpectedQuayRef
+				}
+				if call.ArrivalStopAssignment.ActualQuayRef != "" {
+					estimatedJsonObject["ArrivalStopAssignment.ActualQuayRef"] = call.ArrivalStopAssignment.ActualQuayRef
+				}
+				if call.CallNote != "" {
+					estimatedJsonObject["CallNote"] = call.CallNote
+				}
+				if call.DestinationDisplay != "" {
+					estimatedJsonObject["DestinationDisplay"] = call.DestinationDisplay
+				}
+				if call.ExpectedDeparturePredictionQuality.PredictionLevel != "" {
+					estimatedJsonObject["ExpectedDeparturePredictionQuality.PredictionLevel"] = call.ExpectedDeparturePredictionQuality.PredictionLevel
+				}
+				if call.ExpectedArrivalPredictionQuality.PredictionLevel != "" {
+					estimatedJsonObject["ExpectedArrivalPredictionQuality.PredictionLevel"] = call.ExpectedArrivalPredictionQuality.PredictionLevel
+				}
+				if call.TimingPoint != "" {
+					estimatedJsonObject["TimingPoint"] = call.TimingPoint
+				}
+				if call.SituationRef != "" {
+					estimatedJsonObject["SituationRef"] = call.SituationRef
+				}
+				if call.PredictionInaccurate != "" {
+					estimatedJsonObject["PredictionInaccurate"] = call.PredictionInaccurate
+				}
+				if call.Occupancy != "" {
+					estimatedJsonObject["Occupancy"] = call.Occupancy
+				}
+
+				// Convert the JSON object to a JSON string
+				jsonString, err := json.Marshal(estimatedJsonObject)
+				if err != nil {
+					log.Fatal(err)
+				}
+				estimatedValues = append(estimatedValues, string(jsonString))
+
+				// Insert or update the record
+				stringValues := make([]string, len(estimatedValues))
+				for i, v := range estimatedValues {
+					stringValues[i] = fmt.Sprintf("%v", v)
+				}
+				id, action, err := database.InsertOrUpdateEstimatedCall(db, stringValues)
+				if err != nil {
+					fmt.Printf("Error inserting/updating estimated call: %v\n", err)
+				} else {
+					fmt.Printf("Action: %s, ID: %d\n", action, id)
+				}
+			}
+		}
 	}
 }
