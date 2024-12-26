@@ -136,9 +136,11 @@ func DBData(data *data.Data) {
 		values = append(values, otherJson)
 
 		// Insert or update the record
-		err = database.InsertOrUpdateEstimatedVehicleJourney(db, values)
+		id, action, err := database.InsertOrUpdateEstimatedVehicleJourney(db, values)
 		if err != nil {
 			fmt.Printf("Error inserting/updating estimated vehicle journey: %v\n", err)
+		} else {
+			fmt.Printf("Action: %s, ID: %d\n", action, id)
 		}
 	}
 }

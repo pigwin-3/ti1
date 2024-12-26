@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func InsertOrUpdateEstimatedVehicleJourney(db *sql.DB, values []interface{}) error {
+func InsertOrUpdateEstimatedVehicleJourney(db *sql.DB, values []interface{}) (int, string, error) {
 	query := `
 	INSERT INTO estimatedvehiclejourney (servicedelivery, recordedattime, lineref, directionref, datasource, datedvehiclejourneyref, vehiclemode, dataframeref, originref, destinationref, operatorref, vehicleref, cancellation, other)
 	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
@@ -26,7 +26,7 @@ func InsertOrUpdateEstimatedVehicleJourney(db *sql.DB, values []interface{}) err
 
 	stmt, err := db.Prepare(query)
 	if err != nil {
-		return fmt.Errorf("error preparing statement: %v", err)
+		return 0, "", fmt.Errorf("error preparing statement: %v", err)
 	}
 	defer stmt.Close()
 
@@ -34,10 +34,8 @@ func InsertOrUpdateEstimatedVehicleJourney(db *sql.DB, values []interface{}) err
 	var id int
 	err = stmt.QueryRow(values...).Scan(&action, &id)
 	if err != nil {
-		return fmt.Errorf("error executing statement: %v", err)
+		return 0, "", fmt.Errorf("error executing statement: %v", err)
 	}
 
-	fmt.Printf("Action: %s, ID: %d\n", action, id)
-
-	return nil
+	return id, action, nil
 }
