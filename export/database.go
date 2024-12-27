@@ -26,6 +26,9 @@ func DBData(data *data.Data) {
 	}
 	fmt.Println("SID:", sid)
 
+	// counters
+	var insertCount, updateCount, totalCount int
+
 	for _, journey := range data.ServiceDelivery.EstimatedTimetableDelivery[0].EstimatedJourneyVersionFrame.EstimatedVehicleJourney {
 		var values []interface{}
 		var datedVehicleJourneyRef, otherJson string
@@ -143,7 +146,20 @@ func DBData(data *data.Data) {
 			if 1 == 0 {
 				fmt.Printf("Action: %s, ID: %d\n", action, id)
 			}
+
+			if action == "insert" {
+				insertCount++
+			} else if action == "update" {
+				updateCount++
+			}
+			totalCount = insertCount + updateCount
+
+			//fmt.Printf("Inserts: %d, Updates: %d, Total: %d\n", insertCount, updateCount, totalCount)
+			if totalCount%100 == 0 {
+				fmt.Printf("Inserts: %d, Updates: %d, Total: %d\n", insertCount, updateCount, totalCount)
+			}
 		}
+
 		for _, estimatedCall := range journey.EstimatedCalls {
 			for _, call := range estimatedCall.EstimatedCall {
 				var estimatedValues []interface{}
@@ -275,4 +291,5 @@ func DBData(data *data.Data) {
 			}
 		}
 	}
+	fmt.Printf("Total: Inserts: %d, Updates: %d, Total: %d\n", insertCount, updateCount, totalCount)
 }

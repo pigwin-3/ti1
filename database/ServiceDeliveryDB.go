@@ -14,6 +14,6 @@ func InsertServiceDelivery(db *sql.DB, responseTimestamp string, recordedAtTime 
 		fmt.Println(err)
 		return 0, err
 	}
-	fmt.Println("ServiceDelivery inserted successfully! (", id, ")")
+	//fmt.Println("ServiceDelivery inserted successfully! (", id, ")")
 	return id, nil
 }

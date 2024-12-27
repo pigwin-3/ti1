@@ -169,6 +169,7 @@ func FetchData() (*Data, error) {
 		},
 	}
 
+	start := time.Now()
 	resp, err := client.Get("https://api.entur.io/realtime/v1/rest/et?useOriginalId=true&maxSize=100000&requestorId=ti1ASDASDDAAWdfs")
 	if err != nil {
 		return nil, err
@@ -181,6 +182,14 @@ func FetchData() (*Data, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	elapsed := time.Since(start)
+	contentLength := resp.ContentLength / (1024 * 1024) // Convert bytes to MB
+	if contentLength < 0 {
+		contentLength = 0 // If ContentLength is unknown, set to 0
+	}
+
+	println("Download took", elapsed.Seconds(), "seconds and downloaded", contentLength, "MB")
 
 	return data, nil
 }
