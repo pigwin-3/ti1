@@ -9,13 +9,16 @@ import (
 func main() {
 	//config.PrintDBConfig()
 
-	data, err := data.FetchData()
-	if err != nil {
-		log.Fatal(err)
-	}
+	for i := 0; i < 10; i++ {
+		data, err := data.FetchData()
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	//export.ExportToCSV(data)
-	export.DBData(data)
+		//export.ExportToCSV(data)
+		export.DBData(data)
+	}
+	println(":)")
 	//export.PrintData(data)
 
 	//log.Printf("Data fetched successfully: %+v", data)

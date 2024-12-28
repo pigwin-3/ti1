@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 	"ti1/config"
 	"ti1/data"
 	"ti1/database"
@@ -36,7 +37,8 @@ func DBData(data *data.Data) {
 		values = append(values, sid)
 		values = append(values, journey.RecordedAtTime)
 		values = append(values, journey.LineRef)
-		values = append(values, journey.DirectionRef)
+		//had to add to lowercase cus some values vary in case and it was causing duplicates
+		values = append(values, strings.ToLower(journey.DirectionRef))
 		values = append(values, journey.DataSource)
 
 		if journey.FramedVehicleJourneyRef.DatedVehicleJourneyRef != "" {
@@ -155,7 +157,7 @@ func DBData(data *data.Data) {
 			totalCount = insertCount + updateCount
 
 			//fmt.Printf("Inserts: %d, Updates: %d, Total: %d\n", insertCount, updateCount, totalCount)
-			if totalCount%500 == 0 {
+			if totalCount%1000 == 0 {
 				fmt.Printf(
 					"Inserts: %d, Updates: %d, Total: %d; estimatedCalls = I: %d U: %d; recordedCalls = I: %d U: %d\n",
 					insertCount,

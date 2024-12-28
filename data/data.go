@@ -128,7 +128,7 @@ type Data struct {
 func FetchData() (*Data, error) {
 	client := &http.Client{}
 
-	resp, err := client.Get("https://api.entur.io/realtime/v1/rest/et?useOriginalId=true&maxSize=50000")
+	resp, err := client.Get("https://api.entur.io/realtime/v1/rest/et?useOriginalId=true&maxSize=100000")
 	if err != nil {
 		return nil, err
 	}
