@@ -27,7 +27,7 @@ func DBData(data *data.Data) {
 	fmt.Println("SID:", sid)
 
 	// counters
-	var insertCount, updateCount, totalCount int
+	var insertCount, updateCount, totalCount, estimatedCallInsertCount, estimatedCallUpdateCount int
 
 	for _, journey := range data.ServiceDelivery.EstimatedTimetableDelivery[0].EstimatedJourneyVersionFrame.EstimatedVehicleJourney {
 		var values []interface{}
@@ -156,7 +156,7 @@ func DBData(data *data.Data) {
 
 			//fmt.Printf("Inserts: %d, Updates: %d, Total: %d\n", insertCount, updateCount, totalCount)
 			if totalCount%100 == 0 {
-				fmt.Printf("Inserts: %d, Updates: %d, Total: %d\n", insertCount, updateCount, totalCount)
+				fmt.Printf("Inserts: %d, Updates: %d, Total: %d; estimatedCalls = I: %d U: %d\n", insertCount, updateCount, totalCount, estimatedCallInsertCount, estimatedCallUpdateCount)
 			}
 		}
 
@@ -287,9 +287,16 @@ func DBData(data *data.Data) {
 					if 1 == 0 {
 						fmt.Printf("Action: %s, ID: %d\n", action, id)
 					}
+
+					if action == "insert" {
+						estimatedCallInsertCount++
+					} else if action == "update" {
+						estimatedCallUpdateCount++
+					}
 				}
 			}
 		}
+		// add recorded calls here
 	}
-	fmt.Printf("Total: Inserts: %d, Updates: %d, Total: %d\n", insertCount, updateCount, totalCount)
+	fmt.Printf("Inserts: %d, Updates: %d, Total: %d; estimatedCalls = I: %d U: %d\n", insertCount, updateCount, totalCount, estimatedCallInsertCount, estimatedCallUpdateCount)
 }
