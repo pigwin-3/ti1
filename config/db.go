@@ -41,6 +41,15 @@ func ConnectToPostgreSQL() (*sql.DB, error) {
 	return db, nil
 }
 
+func DisconnectFromPostgreSQL(db *sql.DB) error {
+	fmt.Println("Disconnecting from PostgreSQL...")
+	if err := db.Close(); err != nil {
+		return err
+	}
+	log.Println("Disconnected from PostgreSQL!")
+	return nil
+}
+
 func PrintDBConfig() {
 	config, err := LoadConfig("config/conf.json")
 	if err != nil {
@@ -48,9 +57,9 @@ func PrintDBConfig() {
 		return
 	}
 
-	//fmt.Println("Configuration:", config)
-	//fmt.Println("Host:", config.Database.Host)
-	//fmt.Println("Port:", config.Database.Port)
+	fmt.Println("Configuration:", config)
+	fmt.Println("Host:", config.Database.Host)
+	fmt.Println("Port:", config.Database.Port)
 	fmt.Println("Database User:", config.Database.User)
-	//fmt.Println("Database Password:", config.Database.Password)
+	fmt.Println("Database Password:", config.Database.Password)
 }

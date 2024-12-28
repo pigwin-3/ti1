@@ -27,7 +27,7 @@ func DBData(data *data.Data) {
 	fmt.Println("SID:", sid)
 
 	// counters
-	var insertCount, updateCount, totalCount, estimatedCallInsertCount, estimatedCallUpdateCount int
+	var insertCount, updateCount, totalCount, estimatedCallInsertCount, estimatedCallUpdateCount, recordedCallInsertCount, recordedCallUpdateCount int
 
 	for _, journey := range data.ServiceDelivery.EstimatedTimetableDelivery[0].EstimatedJourneyVersionFrame.EstimatedVehicleJourney {
 		var values []interface{}
@@ -155,8 +155,17 @@ func DBData(data *data.Data) {
 			totalCount = insertCount + updateCount
 
 			//fmt.Printf("Inserts: %d, Updates: %d, Total: %d\n", insertCount, updateCount, totalCount)
-			if totalCount%100 == 0 {
-				fmt.Printf("Inserts: %d, Updates: %d, Total: %d; estimatedCalls = I: %d U: %d\n", insertCount, updateCount, totalCount, estimatedCallInsertCount, estimatedCallUpdateCount)
+			if totalCount%500 == 0 {
+				fmt.Printf(
+					"Inserts: %d, Updates: %d, Total: %d; estimatedCalls = I: %d U: %d; recordedCalls = I: %d U: %d\n",
+					insertCount,
+					updateCount,
+					totalCount,
+					estimatedCallInsertCount,
+					estimatedCallUpdateCount,
+					recordedCallInsertCount,
+					recordedCallUpdateCount,
+				)
 			}
 		}
 
@@ -296,7 +305,115 @@ func DBData(data *data.Data) {
 				}
 			}
 		}
-		// add recorded calls here
+		for _, recordedCall := range journey.RecordedCalls {
+			for _, call := range recordedCall.RecordedCall {
+				var recordedValues []interface{}
+
+				//1 estimatedvehiclejourney
+				recordedValues = append(recordedValues, id)
+				//2 order
+				recordedValues = append(recordedValues, call.Order)
+				//3 stoppointref
+				recordedValues = append(recordedValues, call.StopPointRef)
+				//4 aimeddeparturetime
+				recordedValues = append(recordedValues, call.AimedDepartureTime)
+				//5 expecteddeparturetime
+				recordedValues = append(recordedValues, call.ExpectedDepartureTime)
+				//6 aimedarrivaltime
+				recordedValues = append(recordedValues, call.AimedArrivalTime)
+				//7 expectedarrivaltime
+				recordedValues = append(recordedValues, call.ExpectedArrivalTime)
+				//8 cancellation
+				recordedValues = append(recordedValues, call.Cancellation)
+				//9 actualdeparturetime
+				recordedValues = append(recordedValues, call.ActualDepartureTime)
+				//10 actualarrivaltime
+				recordedValues = append(recordedValues, call.ActualArrivalTime)
+
+				//11 recorded_data (JSON)
+				recordedJsonObject := make(map[string]interface{})
+				if call.StopPointName != "" {
+					recordedJsonObject["StopPointName"] = call.StopPointName
+				}
+				if call.ArrivalPlatformName != "" {
+					recordedJsonObject["ArrivalPlatformName"] = call.ArrivalPlatformName
+				}
+				if call.DeparturePlatformName != "" {
+					recordedJsonObject["DeparturePlatformName"] = call.DeparturePlatformName
+				}
+				if call.PredictionInaccurate != "" {
+					recordedJsonObject["PredictionInaccurate"] = call.PredictionInaccurate
+				}
+				if call.Occupancy != "" {
+					recordedJsonObject["Occupancy"] = call.Occupancy
+				}
+
+				// Convert the JSON object to a JSON string
+				jsonString, err := json.Marshal(recordedJsonObject)
+				if err != nil {
+					log.Fatal(err)
+				}
+				recordedValues = append(recordedValues, string(jsonString))
+
+				// Insert or update the record
+				stringValues := make([]string, len(recordedValues))
+				for i, v := range recordedValues {
+					stringValues[i] = fmt.Sprintf("%v", v)
+				}
+				interfaceValues := make([]interface{}, len(stringValues))
+				for i, v := range stringValues {
+					interfaceValues[i] = v
+				}
+
+				id, action, err := database.InsertOrUpdateRecordedCall(db, interfaceValues)
+				if err != nil {
+					fmt.Printf("Error inserting/updating recorded call: %v\n", err)
+				} else {
+					if 1 == 0 {
+						fmt.Printf("Action: %s, ID: %d\n", action, id)
+					}
+
+					if action == "insert" {
+						recordedCallInsertCount++
+						//fmt.Printf("Action: %s, ID: %d\n", action, id)
+					} else if action == "update" {
+						recordedCallUpdateCount++
+					}
+				}
+			}
+		}
+
 	}
-	fmt.Printf("Inserts: %d, Updates: %d, Total: %d; estimatedCalls = I: %d U: %d\n", insertCount, updateCount, totalCount, estimatedCallInsertCount, estimatedCallUpdateCount)
+	fmt.Printf(
+		"DONE: Inserts: %d, Updates: %d, Total: %d; estimatedCalls = I: %d U: %d; recordedCalls = I: %d U: %d\n",
+		insertCount,
+		updateCount,
+		totalCount,
+		estimatedCallInsertCount,
+		estimatedCallUpdateCount,
+		recordedCallInsertCount,
+		recordedCallUpdateCount,
+	)
+	// Create map to hold JSON
+	serviceDeliveryJsonObject := make(map[string]interface{})
+
+	// Add fields to JSON
+	serviceDeliveryJsonObject["Inserts"] = insertCount
+	serviceDeliveryJsonObject["Updates"] = updateCount
+	serviceDeliveryJsonObject["EstimatedCallInserts"] = estimatedCallInsertCount
+	serviceDeliveryJsonObject["EstimatedCallUpdates"] = estimatedCallUpdateCount
+	serviceDeliveryJsonObject["RecordedCallInserts"] = recordedCallInsertCount
+	serviceDeliveryJsonObject["RecordedCallUpdates"] = recordedCallUpdateCount
+
+	// Convert JSON object to JSON string
+	serviceDeliveryJsonString, err := json.Marshal(serviceDeliveryJsonObject)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Update ServiceDelivery data in database
+	err = database.UpdateServiceDeliveryData(db, sid, string(serviceDeliveryJsonString))
+	if err != nil {
+		log.Fatal(err)
+	}
 }

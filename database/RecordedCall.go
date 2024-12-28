@@ -18,9 +18,10 @@ func InsertOrUpdateRecordedCall(db *sql.DB, values []interface{}) (int, string, 
             estimatedvehiclejourney, "order", stoppointref,
             aimeddeparturetime, expecteddeparturetime,
             aimedarrivaltime, expectedarrivaltime,
-            cancellation, estimated_data
+            cancellation, actualdeparturetime, actualarrivaltime,
+            recorded_data
         )
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
         ON CONFLICT (estimatedvehiclejourney, "order")
         DO UPDATE SET
             stoppointref = EXCLUDED.stoppointref,
@@ -29,7 +30,9 @@ func InsertOrUpdateRecordedCall(db *sql.DB, values []interface{}) (int, string, 
             aimedarrivaltime = EXCLUDED.aimedarrivaltime,
             expectedarrivaltime = EXCLUDED.expectedarrivaltime,
             cancellation = EXCLUDED.cancellation,
-            estimated_data = EXCLUDED.estimated_data
+            actualdeparturetime = EXCLUDED.actualdeparturetime,
+            actualarrivaltime = EXCLUDED.actualarrivaltime,
+            recorded_data = EXCLUDED.recorded_data
         RETURNING CASE WHEN xmax = 0 THEN 'insert' ELSE 'update' END, id;
     `
 	stmt, err := db.Prepare(query)

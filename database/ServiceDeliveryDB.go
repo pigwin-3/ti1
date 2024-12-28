@@ -17,3 +17,14 @@ func InsertServiceDelivery(db *sql.DB, responseTimestamp string, recordedAtTime 
 	//fmt.Println("ServiceDelivery inserted successfully! (", id, ")")
 	return id, nil
 }
+
+func UpdateServiceDeliveryData(db *sql.DB, id int, data string) error {
+	fmt.Println("Updating ServiceDelivery data...")
+	_, err := db.Exec("UPDATE public.ServiceDelivery SET Data = $1 WHERE ID = $2", data, id)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	fmt.Println("Finished with this ServiceDelivery!")
+	return nil
+}

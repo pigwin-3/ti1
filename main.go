@@ -2,13 +2,12 @@ package main
 
 import (
 	"log"
-	"ti1/config"
 	"ti1/data"
 	"ti1/export"
 )
 
 func main() {
-	config.PrintDBConfig()
+	//config.PrintDBConfig()
 
 	data, err := data.FetchData()
 	if err != nil {
