@@ -26,26 +26,32 @@ jobs:
         id: timestamp
         run: echo "TIMESTAMP=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
 
-      - name: Get the commit tag
-        id: get-tag
-        run: echo "GIT_TAG=$(git describe --tags --exact-match 2>/dev/null || echo 'no-tag')" >> $GITHUB_ENV
+      - name: Get commit version
+        id: commit-version
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "Commit message: $COMMIT_MSG"  # Debugging output
+          # Updated regex to handle both vX.Y, vX.Y.Z, and vX.Y-pre-release formats
+          if [[ "$COMMIT_MSG" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?(-[a-zA-Z0-9._-]+)?$ ]]; then
+            echo "Version match: $COMMIT_MSG"
+            echo "VERSION=${COMMIT_MSG}" >> $GITHUB_ENV
+          else
+            echo "No version match, defaulting to 'dev'"
+            echo "VERSION=dev" >> $GITHUB_ENV
+          fi
 
       - name: Build Docker image
         run: |
-          if [ "${{ env.GIT_TAG }}" == "no-tag" ]; then
-            docker build -t ti1:dev-${{ env.TIMESTAMP }} .
-          else
-            docker build -t ti1:latest -t ti1:${{ env.GIT_TAG }} .
-          fi
+          docker build -t ti1:${{ env.VERSION }} .
 
       - name: Push Docker image
         run: |
-          if [ "${{ env.GIT_TAG }}" == "no-tag" ]; then
-            docker tag ti1:dev-${{ env.TIMESTAMP }} ${{ secrets.DOCKER_USERNAME }}/ti1:dev-${{ env.TIMESTAMP }}
-            docker push ${{ secrets.DOCKER_USERNAME }}/ti1:dev-${{ env.TIMESTAMP }}
-          else
-            docker tag ti1:latest ${{ secrets.DOCKER_USERNAME }}/ti1:latest
-            docker tag ti1:${{ env.GIT_TAG }} ${{ secrets.DOCKER_USERNAME }}/ti1:${{ env.GIT_TAG }}
-            docker push ${{ secrets.DOCKER_USERNAME }}/ti1:latest
-            docker push ${{ secrets.DOCKER_USERNAME }}/ti1:${{ env.GIT_TAG }}
+          # Always push to 'dev' tag
+          docker tag ti1:${{ env.VERSION }} ${{ secrets.DOCKER_USERNAME }}/ti1:dev
+          docker push ${{ secrets.DOCKER_USERNAME }}/ti1:dev
+
+          # If the version is valid, also push that specific version tag
+          if [[ "${{ env.VERSION }}" != "dev" ]]; then
+            docker tag ti1:${{ env.VERSION }} ${{ secrets.DOCKER_USERNAME }}/ti1:${{ env.VERSION }}
+            docker push ${{ secrets.DOCKER_USERNAME }}/ti1:${{ env.VERSION }}
           fi
