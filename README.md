@@ -1,20 +1,25 @@
 # TI1
 
-The best thing to happen since yesturday at 3 pm
+The best thing to happen since yesterday at 3 pm
 
 ## Usage
 
-``` go run main.go ```
+To use this project, you can pull the Docker image from Docker Hub and run it using the following commands:
 
-``` go build main.go ```
+### Pull the Docker Image
 
-## Changelog
+```sh
+docker pull pigwin1/ti1:latest
+```
 
-| Version   | Changes              |
-|-----------|----------------------|
-| 0.3       | it works as i want it to now (i think) now its time for a shiton of trubleshooting (yay!) |
-| 0.2       | split the project into multiple files to make it more readable |
-| 0.1.1-7   | fixing the json print output to actualy print out all the data and sutch |
-| 0.1       | literaly most of the project |
+### Run the Docker Container
+```sh
+docker run -d --name ti1-container -e DB_HOST=<your_db_host> -e DB_PORT=<your_db_port> -e DB_USER=<your_db_user> -e DB_PASSWORD=<your_db_password> -e DB_NAME=<your_db_name> -e DB_SSLMODE=<your_db_sslmode> pigwin1/ti1:latest
+```
+Replace `<your_db_host>`, `<your_db_port>`, `<your_db_user>`, `<your_db_password>`, `<your_db_name>`, and `<your_db_sslmode>` with your actual database configuration values.
 
-ps i know this is 100% not the way version numbers are supost to work but i'm just cool like that
+### Docker Hub Repository
+You can find the Docker image on Docker Hub at the following link:
+
+https://hub.docker.com/repository/docker/pigwin1/ti1/general
+
