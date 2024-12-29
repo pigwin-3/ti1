@@ -4,12 +4,16 @@ import (
 	"log"
 	"ti1/data"
 	"ti1/export"
+	"time"
 )
 
 func main() {
+	log.Println("Starting...")
 	//config.PrintDBConfig()
 
-	for i := 0; i < 10; i++ {
+	for {
+		start := time.Now()
+
 		data, err := data.FetchData()
 		if err != nil {
 			log.Fatal(err)
@@ -17,8 +21,14 @@ func main() {
 
 		//export.ExportToCSV(data)
 		export.DBData(data)
+
+		log.Println("finished in", time.Since(start))
+		elapsed := time.Since(start)
+		if elapsed < 5*time.Minute {
+			log.Printf("starting again in %v", 5*time.Minute-elapsed)
+			time.Sleep(1*time.Minute - elapsed)
+		}
 	}
-	println(":)")
 	//export.PrintData(data)
 
 	//log.Printf("Data fetched successfully: %+v", data)
