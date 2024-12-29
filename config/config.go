@@ -3,7 +3,6 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 )
 
@@ -54,7 +53,7 @@ func LoadConfig(file string) (Config, error) {
 	if temp := os.Getenv("TEMP"); temp != "" {
 		config.Temp = temp
 	}
-	log.Println("Temp value:", config.Temp)
+	//log.Println("Temp value:", config.Temp)
 
 	return config, nil
 }

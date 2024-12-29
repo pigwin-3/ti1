@@ -1,9 +1,9 @@
 {
     "database": {
-        "host": "binders.net",
+        "host": "localhost",
         "port": "5432",
         "user": "ti1",
-        "password": "W7zZTAkVeWs54zQGNka2KgZpusEa68CG",
+        "password": "",
         "dbname": "ti1",
         "sslmode": "disable"
     },
