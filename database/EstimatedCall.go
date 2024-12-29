@@ -42,7 +42,7 @@ func InsertOrUpdateEstimatedCall(db *sql.DB, values []interface{}) (int, string,
 	var id int
 	err = stmt.QueryRow(values...).Scan(&action, &id)
 	if err != nil {
-		if 1 == 1 {
+		if 1 == 0 {
 			fmt.Println("Executing query:", query)
 			for i, v := range values {
 				fmt.Printf("Value %d: (%v)\n", i+1, v)

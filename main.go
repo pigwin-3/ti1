@@ -3,13 +3,19 @@ package main
 import (
 	"log"
 	"ti1/data"
+	"ti1/database"
 	"ti1/export"
 	"time"
 )
 
 func main() {
 	log.Println("Starting...")
-	//config.PrintDBConfig()
+
+	// Setup the database
+	err := database.SetupDB()
+	if err != nil {
+		log.Fatalf("Database setup failed: %v", err)
+	}
 
 	for {
 		start := time.Now()
@@ -19,7 +25,6 @@ func main() {
 			log.Fatal(err)
 		}
 
-		//export.ExportToCSV(data)
 		export.DBData(data)
 
 		log.Println("finished in", time.Since(start))
@@ -29,10 +34,4 @@ func main() {
 			time.Sleep(1*time.Minute - elapsed)
 		}
 	}
-	//export.PrintData(data)
-
-	//log.Printf("Data fetched successfully: %+v", data)
-
-	//export.PrintData(data)
-
 }
