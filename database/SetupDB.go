@@ -1,30 +1,19 @@
 package database
 
 import (
-	"database/sql"
 	"fmt"
 	"ti1/config"
-
-	_ "github.com/lib/pq"
 )
 
 func SetupDB() error {
 	fmt.Println("Setting up the database...")
 
-	// Load configuration
-	cfg, err := config.LoadConfig("config/conf.json")
-	if err != nil {
-		return fmt.Errorf("failed to load config: %w", err)
-	}
-
 	// Connect to PostgreSQL
-	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		cfg.Database.Host, cfg.Database.Port, cfg.Database.User, cfg.Database.Password, cfg.Database.DBName, cfg.Database.SSLMode)
-	db, err := sql.Open("postgres", connStr)
+	db, err := config.ConnectToPostgreSQL()
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
-	defer db.Close()
+	defer config.DisconnectFromPostgreSQL(db)
 
 	// Create sequences if they do not exist
 	sequences := []string{
@@ -101,7 +90,7 @@ func SetupDB() error {
 		}
 	}
 
-	// Check if the unique constraint exists before adding it
+	// Check if the unique constraint exists before adding it to calls table
 	var constraintExists bool
 	err = db.QueryRow(`
 		SELECT EXISTS (
@@ -124,6 +113,28 @@ func SetupDB() error {
 		fmt.Println("Unique constraint already exists on calls table.")
 	}
 
-	fmt.Println("Database setup completed successfully!")
+	// Check if the unique constraint exists before adding it to estimatedvehiclejourney table
+	err = db.QueryRow(`
+		SELECT EXISTS (
+			SELECT 1
+			FROM pg_constraint
+			WHERE conname = 'unique_lineref_directionref_datasource_datedvehiclejourneyref'
+		);
+	`).Scan(&constraintExists)
+	if err != nil {
+		return fmt.Errorf("failed to check if unique constraint exists: %w", err)
+	}
+
+	if !constraintExists {
+		_, err = db.Exec(`ALTER TABLE estimatedvehiclejourney ADD CONSTRAINT unique_lineref_directionref_datasource_datedvehiclejourneyref UNIQUE (lineref, directionref, datasource, datedvehiclejourneyref);`)
+		if err != nil {
+			return fmt.Errorf("failed to add unique constraint to estimatedvehiclejourney table: %w", err)
+		}
+		fmt.Println("Unique constraint added to estimatedvehiclejourney table.")
+	} else {
+		fmt.Println("Unique constraint already exists on estimatedvehiclejourney table.")
+	}
+
+	fmt.Println("Database setup is good!")
 	return nil
 }
