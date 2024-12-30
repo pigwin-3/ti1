@@ -19,6 +19,7 @@ func main() {
 
 	// Get the current timestamp
 	starttimestamp := time.Now().Format("20060102T150405")
+	log.Printf("Starting timestamp: %s", starttimestamp)
 
 	for {
 		start := time.Now()
