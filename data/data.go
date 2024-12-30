@@ -127,7 +127,7 @@ type Data struct {
 
 func FetchData(timestamp string) (*Data, error) {
 	client := &http.Client{}
-	requestorId := "ti1_" + timestamp
+	requestorId := "ti1-" + timestamp
 
 	url := "https://api.entur.io/realtime/v1/rest/et?useOriginalId=true&maxSize=100000&requestorId=" + requestorId
 	resp, err := client.Get(url)
