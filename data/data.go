@@ -125,10 +125,12 @@ type Data struct {
 	} `xml:"ServiceDelivery"`
 }
 
-func FetchData() (*Data, error) {
+func FetchData(timestamp string) (*Data, error) {
 	client := &http.Client{}
+	requestorId := "ti1_" + timestamp
 
-	resp, err := client.Get("https://api.entur.io/realtime/v1/rest/et?useOriginalId=true&maxSize=100000")
+	url := "https://api.entur.io/realtime/v1/rest/et?useOriginalId=true&maxSize=100000&requestorId=" + requestorId
+	resp, err := client.Get(url)
 	if err != nil {
 		return nil, err
 	}

@@ -17,10 +17,13 @@ func main() {
 		log.Fatalf("Database setup failed: %v", err)
 	}
 
+	// Get the current timestamp
+	starttimestamp := time.Now().Format("20060102T150405")
+
 	for {
 		start := time.Now()
 
-		data, err := data.FetchData()
+		data, err := data.FetchData(starttimestamp)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -31,7 +34,7 @@ func main() {
 		elapsed := time.Since(start)
 		if elapsed < 5*time.Minute {
 			log.Printf("starting again in %v", 5*time.Minute-elapsed)
-			time.Sleep(1*time.Minute - elapsed)
+			time.Sleep(5*time.Minute - elapsed)
 		}
 	}
 }
