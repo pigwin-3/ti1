@@ -28,6 +28,15 @@ func ConnectToPostgreSQL() (*sql.DB, error) {
 
 	fmt.Println("Connection to PostgreSQL opened successfully :D")
 
+    // Set the maximum number of open connections to 20
+    db.SetMaxOpenConns(20)
+
+    // Set the maximum number of idle connections to 10
+    db.SetMaxIdleConns(10)
+
+    // Set the maximum connection lifetime to 1 hour
+    db.SetConnMaxLifetime(1 * time.Hour)
+
 	// Ping database to verify connection
 	err = db.Ping()
 
