@@ -130,6 +130,7 @@ func FetchData(timestamp string) (*Data, error) {
 	requestorId := "ti1-" + timestamp
 
 	url := "https://api.entur.io/realtime/v1/rest/et?useOriginalId=true&maxSize=100000&requestorId=" + requestorId
+	log.Println("Fetching data from URL:", url)
 	resp, err := client.Get(url)
 	if err != nil {
 		return nil, err
