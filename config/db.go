@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -25,6 +26,11 @@ func ConnectToPostgreSQL() (*sql.DB, error) {
     if err != nil {
         return nil, err
     }
+
+    // Set connection pool settings
+    db.SetMaxOpenConns(25) // Maximum number of open connections to the database
+    db.SetMaxIdleConns(25) // Maximum number of connections in the idle connection pool
+    db.SetConnMaxLifetime(1 * time.Hour) // Maximum amount of time a connection may be reused
 
 	fmt.Println("Connection to PostgreSQL opened successfully :D")
 
