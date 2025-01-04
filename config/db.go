@@ -9,36 +9,45 @@ import (
 )
 
 func ConnectToPostgreSQL() (*sql.DB, error) {
-	fmt.Println("Connecting to PostgreSQL...")
-	config, err := LoadConfig("config/conf.json")
-	if err != nil {
-		return nil, err
-	}
+    fmt.Println("Connecting to PostgreSQL...")
+    config, err := LoadConfig("config/conf.json")
+    if err != nil {
+        return nil, err
+    }
 
-	fmt.Println("Configuration loaded successfully!")
+    fmt.Println("Configuration loaded successfully!")
 
-	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		config.Database.Host, config.Database.Port, config.Database.User, config.Database.Password, config.Database.DBName, config.Database.SSLMode)
+    connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+        config.Database.Host, config.Database.Port, config.Database.User, config.Database.Password, config.Database.DBName, config.Database.SSLMode)
 
-	// Open connection to database
-	db, err := sql.Open("postgres", connStr)
-	if err != nil {
-		return nil, err
-	}
+    // Open connection to database
+    db, err := sql.Open("postgres", connStr)
+    if err != nil {
+        return nil, err
+    }
 
-	fmt.Println("Connection to PostgreSQL opened successfully!")
+    fmt.Println("Connection to PostgreSQL opened successfully!")
 
-	// Ping database to verify connection
-	err = db.Ping()
+    // Set the maximum number of open connections to 20
+    db.SetMaxOpenConns(20)
 
-	fmt.Println(err)
-	if err != nil {
-		return nil, err
-	}
+    // Set the maximum number of idle connections to 10
+    db.SetMaxIdleConns(10)
 
-	log.Println("Connected to PostgreSQL!")
+    // Set the maximum connection lifetime to 1 hour
+    db.SetConnMaxLifetime(1 * time.Hour)
 
-	return db, nil
+    // Ping database to verify connection
+    err = db.Ping()
+
+    fmt.Println(err)
+    if err != nil {
+        return nil, err
+    }
+
+    log.Println("Connected to PostgreSQL!")
+
+    return db, nil
 }
 
 func DisconnectFromPostgreSQL(db *sql.DB) error {
