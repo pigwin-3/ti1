@@ -169,7 +169,12 @@ func DBData(data *data.Data) {
 			otherJson = string(jsonString)
 			values = append(values, otherJson)
 
-			jobs <- values
+			// Insert or update the record and get the id
+			id, action, err := database.InsertOrUpdateEstimatedVehicleJourney(db, values)
+			if err != nil {
+				fmt.Printf("Error inserting/updating estimated vehicle journey: %v\n", err)
+				continue
+			}
 
 			// Add the missing code here
 			for _, estimatedCall := range journey.EstimatedCalls {
