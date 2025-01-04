@@ -26,7 +26,7 @@ func ConnectToPostgreSQL() (*sql.DB, error) {
         return nil, err
     }
 
-    fmt.Println("Connection to PostgreSQL opened successfully!")
+	fmt.Println("Connection to PostgreSQL opened successfully :D")
 
     // Set the maximum number of open connections to 20
     db.SetMaxOpenConns(20)
