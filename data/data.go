@@ -1,6 +1,7 @@
 package data
 
 import (
+	"log"
 	"encoding/xml"
 	"net/http"
 )
