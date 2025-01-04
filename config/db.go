@@ -26,7 +26,7 @@ func ConnectToPostgreSQL() (*sql.DB, error) {
 		return nil, err
 	}
 
-	fmt.Println("Connection to PostgreSQL opened successfully!")
+	fmt.Println("Connection to PostgreSQL opened successfully :D")
 
 	// Ping database to verify connection
 	err = db.Ping()
