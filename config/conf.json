@@ -7,5 +7,11 @@
         "dbname": "ti1",
         "sslmode": "disable"
     },
+    "valkey": {
+		"host": "127.0.0.1",
+		"port": "6379",
+		"max_conns": 50,
+		"timeout_ms": 5000
+	},
     "temp": "value"
 }

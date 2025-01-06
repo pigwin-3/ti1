@@ -26,6 +26,10 @@ func InsertOrUpdateEstimatedCall(db *sql.DB, values []interface{}) (int, string,
 	hashString := hex.EncodeToString(hash[:])
 	println(hashString)
 
+	estimatedVehicleJourneyID := values[0]
+	orderID := values[1]
+	fmt.Printf("Estimated Vehicle Journey ID: %v, Order ID: %v\n", estimatedVehicleJourneyID, orderID)
+
 	query := `
         INSERT INTO calls (
             estimatedvehiclejourney, "order", stoppointref,
