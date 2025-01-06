@@ -1,7 +1,9 @@
 package database
 
 import (
+	"crypto/md5"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 )
 
@@ -12,6 +14,17 @@ func InsertOrUpdateEstimatedCall(db *sql.DB, values []interface{}) (int, string,
 			values[i] = nil
 		}
 	}
+
+	// Convert values to a single string and hash it using MD5
+	var valuesString string
+	for _, v := range values {
+		if v != nil {
+			valuesString += fmt.Sprintf("%v", v)
+		}
+	}
+	hash := md5.Sum([]byte(valuesString))
+	hashString := hex.EncodeToString(hash[:])
+	println(hashString)
 
 	query := `
         INSERT INTO calls (
