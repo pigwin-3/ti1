@@ -1,6 +1,7 @@
 package export
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -19,6 +20,15 @@ func DBData(data *data.Data) {
 		log.Fatal(err)
 	}
 	defer db.Close()
+
+	// Connect to Valkey
+	valkeyClient, err := config.ConnectToValkey("config/conf.json")
+	if err != nil {
+		log.Fatalf("Failed to connect to Valkey: %v", err)
+	}
+	defer config.DisconnectFromValkey(valkeyClient)
+
+	ctx := context.Background()
 
 	// Get service id aka sid
 	sid, err := database.InsertServiceDelivery(db, data.ServiceDelivery.ResponseTimestamp, data.ServiceDelivery.EstimatedTimetableDelivery[0].EstimatedJourneyVersionFrame.RecordedAtTime)
@@ -291,9 +301,9 @@ func DBData(data *data.Data) {
 				for i, v := range stringValues {
 					interfaceValues[i] = v
 				}
-				id, action, err := database.InsertOrUpdateEstimatedCall(db, interfaceValues)
+				id, action, err := database.InsertOrUpdateEstimatedCall(ctx, db, interfaceValues, valkeyClient)
 				if err != nil {
-					fmt.Printf("Error inserting/updating estimated call: %v\n", err)
+					log.Fatalf("Failed to insert or update estimated call: %v", err)
 				} else {
 					if 1 == 0 {
 						fmt.Printf("Action: %s, ID: %d\n", action, id)

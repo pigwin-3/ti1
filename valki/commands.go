@@ -1,4 +1,4 @@
-package valkey
+package valki
 
 import (
 	"context"
@@ -7,8 +7,7 @@ import (
 	"github.com/valkey-io/valkey-go"
 )
 
-func SetValkeyValue(client valkey.Client, key, value string) error {
-	ctx := context.Background()
+func SetValkeyValue(ctx context.Context, client valkey.Client, key, value string) error {
 	err := client.Do(ctx, client.B().Set().Key(key).Value(value).Build()).Error()
 	if err != nil {
 		return fmt.Errorf("failed to set value in Valkey: %v", err)
@@ -16,8 +15,7 @@ func SetValkeyValue(client valkey.Client, key, value string) error {
 	return nil
 }
 
-func GetValkeyValue(client valkey.Client, key string) (string, error) {
-	ctx := context.Background()
+func GetValkeyValue(ctx context.Context, client valkey.Client, key string) (string, error) {
 	value, err := client.Do(ctx, client.B().Get().Key(key).Build()).ToString()
 	if err != nil {
 		return "", fmt.Errorf("failed to get value from Valkey: %v", err)
