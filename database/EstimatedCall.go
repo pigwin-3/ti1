@@ -35,6 +35,14 @@ func InsertOrUpdateEstimatedCall(ctx context.Context, db *sql.DB, values []inter
 	key := fmt.Sprintf("%v.%v", estimatedVehicleJourneyID, orderID)
 	fmt.Printf("Estimated Vehicle Journey ID: %v, Order ID: %v\n", estimatedVehicleJourneyID, orderID)
 
+	var err error
+
+	// Set the MD5 hash in Valkey
+	err = valki.SetValkeyValue(ctx, valkeyClient, key, hashString)
+	if err != nil {
+		return 0, "", fmt.Errorf("failed to set value in Valkey: %v", err)
+	}
+
 	// Get the MD5 hash from Valkey
 	retrievedHash, err := valki.GetValkeyValue(ctx, valkeyClient, key)
 	if err != nil {
@@ -46,12 +54,6 @@ func InsertOrUpdateEstimatedCall(ctx context.Context, db *sql.DB, values []inter
 		return 0, "", fmt.Errorf("hash mismatch: original %s, retrieved %s", hashString, retrievedHash)
 	}
 	fmt.Println("Retrieved hash matches the original hash.")
-
-	// Set the MD5 hash in Valkey
-	err = valki.SetValkeyValue(ctx, valkeyClient, key, hashString)
-	if err != nil {
-		return 0, "", fmt.Errorf("failed to set value in Valkey: %v", err)
-	}
 
 	query := `
         INSERT INTO calls (
