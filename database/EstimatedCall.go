@@ -42,9 +42,15 @@ func InsertOrUpdateEstimatedCall(ctx context.Context, db *sql.DB, values []inter
 	}
 
 	// Check if the retrieved value matches the original MD5 hash
-	if retrievedHash == hashString {
-		fmt.Println("Retrieved hash matches the original hash. No update needed.")
-		return 0, "no_update", nil
+	if retrievedHash != hashString {
+		return 0, "", fmt.Errorf("hash mismatch: original %s, retrieved %s", hashString, retrievedHash)
+	}
+	fmt.Println("Retrieved hash matches the original hash.")
+
+	// Set the MD5 hash in Valkey
+	err = valki.SetValkeyValue(ctx, valkeyClient, key, hashString)
+	if err != nil {
+		return 0, "", fmt.Errorf("failed to set value in Valkey: %v", err)
 	}
 
 	query := `
@@ -78,14 +84,5 @@ func InsertOrUpdateEstimatedCall(ctx context.Context, db *sql.DB, values []inter
 	if err != nil {
 		return 0, "", fmt.Errorf("error executing statement: %v", err)
 	}
-
-	// If the record was inserted or updated, set the new hash in Valkey
-	if action == "insert" || action == "update" {
-		err = valki.SetValkeyValue(ctx, valkeyClient, key, hashString)
-		if err != nil {
-			return 0, "", fmt.Errorf("failed to set value in Valkey: %v", err)
-		}
-	}
-
 	return id, action, nil
 }
