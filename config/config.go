@@ -21,6 +21,7 @@ type Config struct {
 		Port      string `json:"port"`
 		MaxConns  int    `json:"max_conns"`
 		TimeoutMs int    `json:"timeout_ms"`
+		Password  string `json:"password"` // Add this line
 	} `json:"valkey"`
 	Temp string `json:"temp"`
 }

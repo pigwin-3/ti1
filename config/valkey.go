@@ -17,6 +17,7 @@ type ValkeyConfig struct {
 	Port      string `json:"port"`
 	MaxConns  int    `json:"max_conns"`
 	TimeoutMs int    `json:"timeout_ms"`
+	Password  string `json:"password"` // Add this line
 }
 
 func LoadValkeyConfig(file string) (ValkeyConfig, error) {
@@ -48,21 +49,27 @@ func LoadValkeyConfig(file string) (ValkeyConfig, error) {
 			config.TimeoutMs = val
 		}
 	}
+	if password := os.Getenv("VALKEY_PASSWORD"); password != "" {
+		config.Password = password
+	}
 
 	return config, nil
 }
 
 func ConnectToValkey(configPath string) (valkey.Client, error) {
-	fmt.Println("Loading Valkey configuration...")
-	valkeyConfig, err := LoadValkeyConfig(configPath)
+	fmt.Println("Loading configuration...")
+	config, err := LoadConfig(configPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load Valkey config: %v", err)
+		return nil, fmt.Errorf("failed to load config: %v", err)
 	}
-	fmt.Println("Valkey configuration loaded successfully!")
+	fmt.Println("Configuration loaded successfully!")
+
+	valkeyConfig := config.Valkey
 
 	// Setup Valkey client options
 	options := valkey.ClientOption{
 		InitAddress: []string{fmt.Sprintf("%s:%s", valkeyConfig.Host, valkeyConfig.Port)},
+		Password:    valkeyConfig.Password,
 		// Additional options can be added here if required
 	}
 
