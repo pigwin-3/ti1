@@ -83,7 +83,7 @@ func InsertOrUpdateEstimatedCall(ctx context.Context, db *sql.DB, values []inter
 		}
 		return id, action, nil
 	} else {
-		fmt.Printf("MATCH!!! Original Hash: %s, Retrieved Hash: %s\n", hashString, retrievedHash)
-		return 0, "no update", nil
+		//fmt.Printf("MATCH!!! Original Hash: %s, Retrieved Hash: %s\n", hashString, retrievedHash)
+		return 0, "none", nil
 	}
 }
