@@ -37,12 +37,6 @@ func InsertOrUpdateEstimatedCall(ctx context.Context, db *sql.DB, values []inter
 
 	var err error
 
-	// Set the MD5 hash in Valkey
-	err = valki.SetValkeyValue(ctx, valkeyClient, key, hashString)
-	if err != nil {
-		return 0, "", fmt.Errorf("failed to set value in Valkey: %v", err)
-	}
-
 	// Get the MD5 hash from Valkey
 	retrievedHash, err := valki.GetValkeyValue(ctx, valkeyClient, key)
 	if err != nil {
@@ -51,40 +45,45 @@ func InsertOrUpdateEstimatedCall(ctx context.Context, db *sql.DB, values []inter
 
 	// Check if the retrieved value matches the original MD5 hash
 	if retrievedHash != hashString {
-		return 0, "", fmt.Errorf("hash mismatch: original %s, retrieved %s", hashString, retrievedHash)
-	}
-	fmt.Println("Retrieved hash matches the original hash.")
+		query := `
+            INSERT INTO calls (
+                estimatedvehiclejourney, "order", stoppointref,
+                aimeddeparturetime, expecteddeparturetime,
+                aimedarrivaltime, expectedarrivaltime,
+                cancellation, estimated_data
+            )
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+            ON CONFLICT (estimatedvehiclejourney, "order")
+            DO UPDATE SET
+                stoppointref = EXCLUDED.stoppointref,
+                aimeddeparturetime = EXCLUDED.aimeddeparturetime,
+                expecteddeparturetime = EXCLUDED.expecteddeparturetime,
+                aimedarrivaltime = EXCLUDED.aimedarrivaltime,
+                expectedarrivaltime = EXCLUDED.expectedarrivaltime,
+                cancellation = EXCLUDED.cancellation,
+                estimated_data = EXCLUDED.estimated_data
+            RETURNING CASE WHEN xmax = 0 THEN 'insert' ELSE 'update' END, id;
+        `
+		stmt, err := db.Prepare(query)
+		if err != nil {
+			return 0, "", fmt.Errorf("error preparing statement: %v", err)
+		}
+		defer stmt.Close()
 
-	query := `
-        INSERT INTO calls (
-            estimatedvehiclejourney, "order", stoppointref,
-            aimeddeparturetime, expecteddeparturetime,
-            aimedarrivaltime, expectedarrivaltime,
-            cancellation, estimated_data
-        )
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-        ON CONFLICT (estimatedvehiclejourney, "order")
-        DO UPDATE SET
-            stoppointref = EXCLUDED.stoppointref,
-            aimeddeparturetime = EXCLUDED.aimeddeparturetime,
-            expecteddeparturetime = EXCLUDED.expecteddeparturetime,
-            aimedarrivaltime = EXCLUDED.aimedarrivaltime,
-            expectedarrivaltime = EXCLUDED.expectedarrivaltime,
-            cancellation = EXCLUDED.cancellation,
-            estimated_data = EXCLUDED.estimated_data
-        RETURNING CASE WHEN xmax = 0 THEN 'insert' ELSE 'update' END, id;
-    `
-	stmt, err := db.Prepare(query)
-	if err != nil {
-		return 0, "", fmt.Errorf("error preparing statement: %v", err)
-	}
-	defer stmt.Close()
+		err = valki.SetValkeyValue(ctx, valkeyClient, key, hashString)
+		if err != nil {
+			return 0, "", fmt.Errorf("failed to set value in Valkey: %v", err)
+		}
 
-	var action string
-	var id int
-	err = stmt.QueryRow(values...).Scan(&action, &id)
-	if err != nil {
-		return 0, "", fmt.Errorf("error executing statement: %v", err)
+		var action string
+		var id int
+		err = stmt.QueryRow(values...).Scan(&action, &id)
+		if err != nil {
+			return 0, "", fmt.Errorf("error executing statement: %v", err)
+		}
+		return id, action, nil
+	} else {
+		fmt.Println("Hashes match")
+		return 0, "no update", nil
 	}
-	return id, action, nil
 }
