@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 type Config struct {
@@ -15,6 +16,13 @@ type Config struct {
 		DBName   string `json:"dbname"`
 		SSLMode  string `json:"sslmode"`
 	} `json:"database"`
+	Valkey struct {
+		Host      string `json:"host"`
+		Port      string `json:"port"`
+		MaxConns  int    `json:"max_conns"`
+		TimeoutMs int    `json:"timeout_ms"`
+		Password  string `json:"password"` // Add this line
+	} `json:"valkey"`
 	Temp string `json:"temp"`
 }
 
@@ -53,7 +61,24 @@ func LoadConfig(file string) (Config, error) {
 	if temp := os.Getenv("TEMP"); temp != "" {
 		config.Temp = temp
 	}
-	//log.Println("Temp value:", config.Temp)
+
+	// Override Valkey settings with environment variables
+	if valkeyHost := os.Getenv("VALKEY_HOST"); valkeyHost != "" {
+		config.Valkey.Host = valkeyHost
+	}
+	if valkeyPort := os.Getenv("VALKEY_PORT"); valkeyPort != "" {
+		config.Valkey.Port = valkeyPort
+	}
+	if maxConns := os.Getenv("VALKEY_MAX_CONNS"); maxConns != "" {
+		if val, err := strconv.Atoi(maxConns); err == nil {
+			config.Valkey.MaxConns = val
+		}
+	}
+	if timeoutMs := os.Getenv("VALKEY_TIMEOUT_MS"); timeoutMs != "" {
+		if val, err := strconv.Atoi(timeoutMs); err == nil {
+			config.Valkey.TimeoutMs = val
+		}
+	}
 
 	return config, nil
 }

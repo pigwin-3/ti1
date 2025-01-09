@@ -1,6 +1,7 @@
 package export
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -20,6 +21,15 @@ func DBData(data *data.Data) {
 	}
 	defer db.Close()
 
+	// Connect to Valkey
+	valkeyClient, err := config.ConnectToValkey("config/conf.json")
+	if err != nil {
+		log.Fatalf("Failed to connect to Valkey: %v", err)
+	}
+	defer config.DisconnectFromValkey(valkeyClient)
+
+	ctx := context.Background()
+
 	// Get service id aka sid
 	sid, err := database.InsertServiceDelivery(db, data.ServiceDelivery.ResponseTimestamp, data.ServiceDelivery.EstimatedTimetableDelivery[0].EstimatedJourneyVersionFrame.RecordedAtTime)
 	if err != nil {
@@ -28,7 +38,7 @@ func DBData(data *data.Data) {
 	fmt.Println("SID:", sid)
 
 	// counters
-	var insertCount, updateCount, totalCount, estimatedCallInsertCount, estimatedCallUpdateCount, recordedCallInsertCount, recordedCallUpdateCount int
+	var insertCount, updateCount, totalCount, estimatedCallInsertCount, estimatedCallUpdateCount, estimatedCallNoneCount, recordedCallInsertCount, recordedCallUpdateCount int
 
 	for _, journey := range data.ServiceDelivery.EstimatedTimetableDelivery[0].EstimatedJourneyVersionFrame.EstimatedVehicleJourney {
 		var values []interface{}
@@ -159,12 +169,13 @@ func DBData(data *data.Data) {
 			//fmt.Printf("Inserts: %d, Updates: %d, Total: %d\n", insertCount, updateCount, totalCount)
 			if totalCount%1000 == 0 {
 				fmt.Printf(
-					"Inserts: %d, Updates: %d, Total: %d; estimatedCalls = I: %d U: %d; recordedCalls = I: %d U: %d\n",
+					"Inserts: %d, Updates: %d, Total: %d; estimatedCalls = I: %d U: %d N: %d; recordedCalls = I: %d U: %d\n",
 					insertCount,
 					updateCount,
 					totalCount,
 					estimatedCallInsertCount,
 					estimatedCallUpdateCount,
+					estimatedCallNoneCount,
 					recordedCallInsertCount,
 					recordedCallUpdateCount,
 				)
@@ -291,9 +302,9 @@ func DBData(data *data.Data) {
 				for i, v := range stringValues {
 					interfaceValues[i] = v
 				}
-				id, action, err := database.InsertOrUpdateEstimatedCall(db, interfaceValues)
+				id, action, err := database.InsertOrUpdateEstimatedCall(ctx, db, interfaceValues, valkeyClient)
 				if err != nil {
-					fmt.Printf("Error inserting/updating estimated call: %v\n", err)
+					log.Fatalf("Failed to insert or update estimated call: %v", err)
 				} else {
 					if 1 == 0 {
 						fmt.Printf("Action: %s, ID: %d\n", action, id)
@@ -303,6 +314,8 @@ func DBData(data *data.Data) {
 						estimatedCallInsertCount++
 					} else if action == "update" {
 						estimatedCallUpdateCount++
+					} else if action == "none" {
+						estimatedCallNoneCount++
 					}
 				}
 			}
@@ -387,12 +400,13 @@ func DBData(data *data.Data) {
 
 	}
 	fmt.Printf(
-		"DONE: Inserts: %d, Updates: %d, Total: %d; estimatedCalls = I: %d U: %d; recordedCalls = I: %d U: %d\n",
+		"DONE: Inserts: %d, Updates: %d, Total: %d; estimatedCalls = I: %d U: %d N: %d; recordedCalls = I: %d U: %d\n",
 		insertCount,
 		updateCount,
 		totalCount,
 		estimatedCallInsertCount,
 		estimatedCallUpdateCount,
+		estimatedCallNoneCount,
 		recordedCallInsertCount,
 		recordedCallUpdateCount,
 	)
@@ -404,6 +418,7 @@ func DBData(data *data.Data) {
 	serviceDeliveryJsonObject["Updates"] = updateCount
 	serviceDeliveryJsonObject["EstimatedCallInserts"] = estimatedCallInsertCount
 	serviceDeliveryJsonObject["EstimatedCallUpdates"] = estimatedCallUpdateCount
+	serviceDeliveryJsonObject["EstimatedCallNone"] = estimatedCallNoneCount
 	serviceDeliveryJsonObject["RecordedCallInserts"] = recordedCallInsertCount
 	serviceDeliveryJsonObject["RecordedCallUpdates"] = recordedCallUpdateCount
 

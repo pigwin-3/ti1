@@ -1,6 +1,6 @@
 # TI1
 
-The best thing to happen since yesterday at 3 pm
+The best thing to happen since yesterday at 2:57 pm
 
 ## Usage
 
@@ -15,7 +15,7 @@ services:
     container_name: postgres-db
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Root Password
+      POSTGRES_PASSWORD: RootPassword
       POSTGRES_DB: ti1
     ports:
       - "5432:5432"
@@ -29,30 +29,50 @@ services:
       interval: 10s
       retries: 5
     restart: always  # Ensure the container always restarts
-
+ 
+  valkey:
+    image: valkey/valkey:latest
+    container_name: valkey
+    environment:
+      VALKEY_PASSWORD: the_valkey_password
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./valkey_data:/data
+    networks:
+      - app-network
+    restart: always  # Ensure the container always restarts
+ 
   ti1-container:
-    image: pigwin1/ti1:v0.1.1
+    image: pigwin1/ti1:dev
     container_name: ti1-container
     environment:
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: ti1
-      DB_PASSWORD: ti1 password
+      DB_PASSWORD: ti1password
       DB_NAME: ti1
       DB_SSLMODE: disable
+      VALKEY_HOST: valkey
+      VALKEY_PORT: 6379
+      VALKEY_PASSWORD: the_valkey_password
     depends_on:
       db:
         condition: service_healthy  # Wait until the db service is healthy
+      valkey:
+        condition: service_started  # Wait until the valkey service is started
     networks:
       - app-network
     restart: always  # Ensure the container always restarts
-
+ 
 networks:
   app-network:
     driver: bridge
-
+ 
 volumes:
   postgres_data:
+    driver: local
+  valkey_data:
     driver: local
 ```
 
@@ -62,7 +82,7 @@ Create `init.sql`
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'post') THEN
-        CREATE ROLE post WITH LOGIN PASSWORD 'post password';
+        CREATE ROLE post WITH LOGIN PASSWORD 'postpassword';
         GRANT ALL PRIVILEGES ON DATABASE ti1 TO post;
         ALTER ROLE post WITH SUPERUSER;
     END IF;
@@ -73,7 +93,7 @@ $$;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'ti1') THEN
-        CREATE ROLE ti1 WITH LOGIN PASSWORD 'ti1 password';
+        CREATE ROLE ti1 WITH LOGIN PASSWORD 'ti1password';
         GRANT ALL PRIVILEGES ON DATABASE ti1 TO ti1;
         GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ti1;
         GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO ti1;
