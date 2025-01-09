@@ -3,12 +3,13 @@ package valki
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/valkey-io/valkey-go"
 )
 
 func SetValkeyValue(ctx context.Context, client valkey.Client, key, value string) error {
-	err := client.Do(ctx, client.B().Set().Key(key).Value(value).Build()).Error()
+	err := client.Do(ctx, client.B().Set().Key(key).Value(value).Ex(time.Hour).Build()).Error()
 	if err != nil {
 		return fmt.Errorf("failed to set value in Valkey: %v", err)
 	}

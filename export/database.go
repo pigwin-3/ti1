@@ -418,6 +418,7 @@ func DBData(data *data.Data) {
 	serviceDeliveryJsonObject["Updates"] = updateCount
 	serviceDeliveryJsonObject["EstimatedCallInserts"] = estimatedCallInsertCount
 	serviceDeliveryJsonObject["EstimatedCallUpdates"] = estimatedCallUpdateCount
+	serviceDeliveryJsonObject["EstimatedCallNone"] = estimatedCallNoneCount
 	serviceDeliveryJsonObject["RecordedCallInserts"] = recordedCallInsertCount
 	serviceDeliveryJsonObject["RecordedCallUpdates"] = recordedCallUpdateCount
 
