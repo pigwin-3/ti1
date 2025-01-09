@@ -28,12 +28,12 @@ func InsertOrUpdateEstimatedCall(ctx context.Context, db *sql.DB, values []inter
 	}
 	hash := md5.Sum([]byte(valuesString))
 	hashString := hex.EncodeToString(hash[:])
-	fmt.Println("HashString:", hashString)
+	//fmt.Println("HashString:", hashString)
 
 	estimatedVehicleJourneyID := values[0]
 	orderID := values[1]
 	key := fmt.Sprintf("%v.%v", estimatedVehicleJourneyID, orderID)
-	fmt.Printf("Estimated Vehicle Journey ID: %v, Order ID: %v\n", estimatedVehicleJourneyID, orderID)
+	//fmt.Printf("Estimated Vehicle Journey ID: %v, Order ID: %v\n", estimatedVehicleJourneyID, orderID)
 
 	var err error
 
@@ -42,6 +42,7 @@ func InsertOrUpdateEstimatedCall(ctx context.Context, db *sql.DB, values []inter
 	if err != nil {
 		return 0, "", fmt.Errorf("failed to get value from Valkey: %v", err)
 	}
+	fmt.Printf("Original Hash: %s, Retrieved Hash: %s\n", hashString, retrievedHash)
 
 	// Check if the retrieved value matches the original MD5 hash
 	if retrievedHash != hashString {
