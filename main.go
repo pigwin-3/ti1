@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	log.Println("ti1 v0.1.2 - 09.01.2025..")
+	log.Println("ti1 v0.2")
 	log.Println("Starting...")
 
 	// Setup the database
