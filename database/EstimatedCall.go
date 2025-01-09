@@ -42,7 +42,6 @@ func InsertOrUpdateEstimatedCall(ctx context.Context, db *sql.DB, values []inter
 	if err != nil {
 		return 0, "", fmt.Errorf("failed to get value from Valkey: %v", err)
 	}
-	fmt.Printf("Original Hash: %s, Retrieved Hash: %s\n", hashString, retrievedHash)
 
 	// Check if the retrieved value matches the original MD5 hash
 	if retrievedHash != hashString {
@@ -84,7 +83,7 @@ func InsertOrUpdateEstimatedCall(ctx context.Context, db *sql.DB, values []inter
 		}
 		return id, action, nil
 	} else {
-		fmt.Println("Hashes match")
+		fmt.Printf("MATCH!!! Original Hash: %s, Retrieved Hash: %s\n", hashString, retrievedHash)
 		return 0, "no update", nil
 	}
 }
