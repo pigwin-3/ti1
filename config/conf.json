@@ -12,7 +12,7 @@
 		"port": "6379",
 		"max_conns": 50,
 		"timeout_ms": 5000,
-        "password": "the_valkey_password"
+        	"password": "the_valkey_password"
 	},
     "temp": "value"
 }
