@@ -38,7 +38,7 @@ func DBData(data *data.Data) {
 	fmt.Println("SID:", sid)
 
 	// counters
-	var insertCount, updateCount, noneCount, totalCount, estimatedCallInsertCount, estimatedCallUpdateCount, estimatedCallNoneCount, recordedCallInsertCount, recordedCallUpdateCount, recordedCallNoneCount int
+	var insertCount, updateCount, totalCount, estimatedCallInsertCount, estimatedCallUpdateCount, estimatedCallNoneCount, recordedCallInsertCount, recordedCallUpdateCount, recordedCallNoneCount int
 
 	for _, journey := range data.ServiceDelivery.EstimatedTimetableDelivery[0].EstimatedJourneyVersionFrame.EstimatedVehicleJourney {
 		var values []interface{}
@@ -151,7 +151,7 @@ func DBData(data *data.Data) {
 		values = append(values, otherJson)
 
 		// Insert or update the record
-		id, action, err := database.InsertOrUpdateEstimatedVehicleJourney(ctx, db, values, valkeyClient)
+		id, action, err := database.InsertOrUpdateEstimatedVehicleJourney(db, values)
 		if err != nil {
 			fmt.Printf("Error inserting/updating estimated vehicle journey: %v\n", err)
 		} else {
@@ -163,10 +163,8 @@ func DBData(data *data.Data) {
 				insertCount++
 			} else if action == "update" {
 				updateCount++
-			} else if action == "none" {
-				noneCount++
 			}
-			totalCount = insertCount + updateCount + noneCount
+			totalCount = insertCount + updateCount
 
 			//fmt.Printf("Inserts: %d, Updates: %d, Total: %d\n", insertCount, updateCount, totalCount)
 			if totalCount%1000 == 0 {
