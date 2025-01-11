@@ -38,7 +38,7 @@ func DBData(data *data.Data) {
 	fmt.Println("SID:", sid)
 
 	// counters
-	var insertCount, updateCount, totalCount, estimatedCallInsertCount, estimatedCallUpdateCount, estimatedCallNoneCount, recordedCallInsertCount, recordedCallUpdateCount int
+	var insertCount, updateCount, totalCount, estimatedCallInsertCount, estimatedCallUpdateCount, estimatedCallNoneCount, recordedCallInsertCount, recordedCallUpdateCount, recordedCallNoneCount int
 
 	for _, journey := range data.ServiceDelivery.EstimatedTimetableDelivery[0].EstimatedJourneyVersionFrame.EstimatedVehicleJourney {
 		var values []interface{}
@@ -169,7 +169,7 @@ func DBData(data *data.Data) {
 			//fmt.Printf("Inserts: %d, Updates: %d, Total: %d\n", insertCount, updateCount, totalCount)
 			if totalCount%1000 == 0 {
 				fmt.Printf(
-					"Inserts: %d, Updates: %d, Total: %d; estimatedCalls = I: %d U: %d N: %d; recordedCalls = I: %d U: %d\n",
+					"Inserts: %d, Updates: %d, Total: %d; estimatedCalls = I: %d U: %d N: %d; recordedCalls = I: %d U: %d N: %d\n",
 					insertCount,
 					updateCount,
 					totalCount,
@@ -178,6 +178,7 @@ func DBData(data *data.Data) {
 					estimatedCallNoneCount,
 					recordedCallInsertCount,
 					recordedCallUpdateCount,
+					recordedCallNoneCount,
 				)
 			}
 		}
@@ -380,7 +381,7 @@ func DBData(data *data.Data) {
 					interfaceValues[i] = v
 				}
 
-				id, action, err := database.InsertOrUpdateRecordedCall(db, interfaceValues)
+				id, action, err := database.InsertOrUpdateRecordedCall(ctx, db, interfaceValues, valkeyClient)
 				if err != nil {
 					fmt.Printf("Error inserting/updating recorded call: %v\n", err)
 				} else {
@@ -393,6 +394,8 @@ func DBData(data *data.Data) {
 						//fmt.Printf("Action: %s, ID: %d\n", action, id)
 					} else if action == "update" {
 						recordedCallUpdateCount++
+					} else if action == "none" {
+						recordedCallNoneCount++
 					}
 				}
 			}
@@ -400,7 +403,7 @@ func DBData(data *data.Data) {
 
 	}
 	fmt.Printf(
-		"DONE: Inserts: %d, Updates: %d, Total: %d; estimatedCalls = I: %d U: %d N: %d; recordedCalls = I: %d U: %d\n",
+		"DONE: Inserts: %d, Updates: %d, Total: %d; estimatedCalls = I: %d U: %d N: %d; recordedCalls = I: %d U: %d N: %d\n",
 		insertCount,
 		updateCount,
 		totalCount,
@@ -409,6 +412,7 @@ func DBData(data *data.Data) {
 		estimatedCallNoneCount,
 		recordedCallInsertCount,
 		recordedCallUpdateCount,
+		recordedCallNoneCount,
 	)
 	// Create map to hold JSON
 	serviceDeliveryJsonObject := make(map[string]interface{})
@@ -421,6 +425,7 @@ func DBData(data *data.Data) {
 	serviceDeliveryJsonObject["EstimatedCallNone"] = estimatedCallNoneCount
 	serviceDeliveryJsonObject["RecordedCallInserts"] = recordedCallInsertCount
 	serviceDeliveryJsonObject["RecordedCallUpdates"] = recordedCallUpdateCount
+	serviceDeliveryJsonObject["RecordedCallNone"] = recordedCallNoneCount
 
 	// Convert JSON object to JSON string
 	serviceDeliveryJsonString, err := json.Marshal(serviceDeliveryJsonObject)
