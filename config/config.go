@@ -21,9 +21,11 @@ type Config struct {
 		Port      string `json:"port"`
 		MaxConns  int    `json:"max_conns"`
 		TimeoutMs int    `json:"timeout_ms"`
-		Password  string `json:"password"` // Add this line
+		Password  string `json:"password"`
 	} `json:"valkey"`
-	Temp string `json:"temp"`
+	Temp             string `json:"temp"`
+	DatasetId        string `json:"dataset_id"`
+	ExcludedDatasetIds string `json:"excluded_dataset_ids"`
 }
 
 func LoadConfig(file string) (Config, error) {
@@ -78,6 +80,14 @@ func LoadConfig(file string) (Config, error) {
 		if val, err := strconv.Atoi(timeoutMs); err == nil {
 			config.Valkey.TimeoutMs = val
 		}
+	}
+
+	// Override datasetId and excludedDatasetIds with environment variables
+	if datasetId := os.Getenv("DATASET_ID"); datasetId != "" {
+		config.DatasetId = datasetId
+	}
+	if excludedDatasetIds := os.Getenv("EXCLUDED_DATASET_IDS"); excludedDatasetIds != "" {
+		config.ExcludedDatasetIds = excludedDatasetIds
 	}
 
 	return config, nil

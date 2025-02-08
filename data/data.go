@@ -1,9 +1,10 @@
 package data
 
 import (
-	"log"
 	"encoding/xml"
+	"log"
 	"net/http"
+	"strings"
 )
 
 type Data struct {
@@ -126,13 +127,20 @@ type Data struct {
 	} `xml:"ServiceDelivery"`
 }
 
-func FetchData(timestamp string) (*Data, error) {
+func FetchData(timestamp, datasetId, excludedDatasetIds string) (*Data, error) {
 	client := &http.Client{}
 	requestorId := "ti1-" + timestamp
 
-	url := "https://api.entur.io/realtime/v1/rest/et?useOriginalId=true&maxSize=100000&requestorId=" + requestorId
-	log.Println("Fetching data from URL:", url)
-	resp, err := client.Get(url)
+	baseURL := "https://api.entur.io/realtime/v1/rest/et?useOriginalId=true&maxSize=100000&requestorId=" + requestorId
+
+	if datasetId != "" {
+		baseURL += "&datasetId=" + datasetId
+	} else if excludedDatasetIds != "" {
+		baseURL += "&excludedDatasetIds=" + strings.ReplaceAll(excludedDatasetIds, ",", "&excludedDatasetIds=")
+	}
+
+	log.Println("Fetching data from URL:", baseURL)
+	resp, err := client.Get(baseURL)
 	if err != nil {
 		return nil, err
 	}
