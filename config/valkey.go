@@ -17,7 +17,7 @@ type ValkeyConfig struct {
 	Port      string `json:"port"`
 	MaxConns  int    `json:"max_conns"`
 	TimeoutMs int    `json:"timeout_ms"`
-	Password  string `json:"password"` // Add this line
+	Password  string `json:"password"`
 }
 
 func LoadValkeyConfig(file string) (ValkeyConfig, error) {
@@ -56,9 +56,9 @@ func LoadValkeyConfig(file string) (ValkeyConfig, error) {
 	return config, nil
 }
 
-func ConnectToValkey(configPath string) (valkey.Client, error) {
+func ConnectToValkey() (valkey.Client, error) {
 	fmt.Println("Loading configuration...")
-	config, err := LoadConfig(configPath)
+	config, err := LoadConfig()
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config: %v", err)
 	}

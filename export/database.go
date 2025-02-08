@@ -22,7 +22,7 @@ func DBData(data *data.Data) {
 	defer db.Close()
 
 	// Connect to Valkey
-	valkeyClient, err := config.ConnectToValkey("config/conf.json")
+	valkeyClient, err := config.ConnectToValkey()
 	if err != nil {
 		log.Fatalf("Failed to connect to Valkey: %v", err)
 	}

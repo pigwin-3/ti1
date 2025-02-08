@@ -11,7 +11,7 @@ import (
 
 func ConnectToPostgreSQL() (*sql.DB, error) {
 	fmt.Println("Connecting to PostgreSQL...")
-	config, err := LoadConfig("config/conf.json")
+	config, err := LoadConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func DisconnectFromPostgreSQL(db *sql.DB) error {
 }
 
 func PrintDBConfig() {
-	config, err := LoadConfig("config/conf.json")
+	config, err := LoadConfig()
 	if err != nil {
 		fmt.Println("Error loading config:", err)
 		return

@@ -68,6 +68,7 @@ func SetupDB() error {
 			id INTEGER PRIMARY KEY DEFAULT nextval('public.servicedelivery_id_seq'),
 			responsetimestamp TIMESTAMPTZ,
 			recordedattime TIMESTAMPTZ,
+			source VARCHAR,
 			data JSON
 		);`,
 	}

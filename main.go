@@ -14,7 +14,7 @@ func main() {
 	log.Println("Starting...")
 
 	// Load configuration
-	cfg, err := config.LoadConfig("config/conf.json")
+	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}

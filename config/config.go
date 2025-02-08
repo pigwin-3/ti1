@@ -7,6 +7,8 @@ import (
 	"strconv"
 )
 
+const configFilePath = "config/conf.json"
+
 type Config struct {
 	Database struct {
 		Host     string `json:"host"`
@@ -23,14 +25,14 @@ type Config struct {
 		TimeoutMs int    `json:"timeout_ms"`
 		Password  string `json:"password"`
 	} `json:"valkey"`
-	Temp             string `json:"temp"`
-	DatasetId        string `json:"dataset_id"`
+	Temp               string `json:"temp"`
+	DatasetId          string `json:"dataset_id"`
 	ExcludedDatasetIds string `json:"excluded_dataset_ids"`
 }
 
-func LoadConfig(file string) (Config, error) {
+func LoadConfig() (Config, error) {
 	var config Config
-	configFile, err := os.Open(file)
+	configFile, err := os.Open(configFilePath)
 	if err != nil {
 		return config, fmt.Errorf("failed to open config file: %w", err)
 	}

@@ -3,13 +3,37 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"ti1/config"
 )
+
+func GetDatasetVariable(config config.Config) string {
+	if config.DatasetId != "" {
+		fmt.Println(config.DatasetId)
+		return config.DatasetId
+	} else if config.ExcludedDatasetIds != "" {
+		result := "EX." + config.ExcludedDatasetIds
+		fmt.Println(result)
+		return result
+	}
+	fmt.Println("")
+	return ""
+}
 
 func InsertServiceDelivery(db *sql.DB, responseTimestamp string, recordedAtTime string) (int, error) {
 	fmt.Println("Inserting ServiceDelivery...")
 	var id int
 
-	err := db.QueryRow("INSERT INTO public.ServiceDelivery (ResponseTimestamp, RecordedAtTime) VALUES ($1, $2) RETURNING ID", responseTimestamp, recordedAtTime).Scan(&id)
+	// Load configuration
+	config, err := config.LoadConfig()
+	if err != nil {
+		fmt.Println("Error loading config:", err)
+		return 0, err
+	}
+
+	// Get dataset variable
+	datasetVariable := GetDatasetVariable(config)
+
+	err = db.QueryRow("INSERT INTO public.ServiceDelivery (ResponseTimestamp, RecordedAtTime, DatasetVariable) VALUES ($1, $2, $3) RETURNING ID", responseTimestamp, recordedAtTime, datasetVariable).Scan(&id)
 	if err != nil {
 		fmt.Println(err)
 		return 0, err
