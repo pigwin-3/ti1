@@ -33,7 +33,7 @@ func InsertServiceDelivery(db *sql.DB, responseTimestamp string, recordedAtTime 
 	// Get dataset variable
 	datasetVariable := GetDatasetVariable(config)
 
-	err = db.QueryRow("INSERT INTO public.ServiceDelivery (ResponseTimestamp, RecordedAtTime, Sourse) VALUES ($1, $2, $3) RETURNING ID", responseTimestamp, recordedAtTime, datasetVariable).Scan(&id)
+	err = db.QueryRow("INSERT INTO public.ServiceDelivery (ResponseTimestamp, RecordedAtTime, Source) VALUES ($1, $2, $3) RETURNING ID", responseTimestamp, recordedAtTime, datasetVariable).Scan(&id)
 	if err != nil {
 		fmt.Println(err)
 		return 0, err
