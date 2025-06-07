@@ -9,7 +9,7 @@ import (
 )
 
 func SetValkeyValue(ctx context.Context, client valkey.Client, key, value string) error {
-	err := client.Do(ctx, client.B().Set().Key(key).Value(value).Ex(time.Hour).Build()).Error()
+	err := client.Do(ctx, client.B().Set().Key(key).Value(value).Ex(90*time.Minute).Build()).Error()
 	if err != nil {
 		return fmt.Errorf("failed to set value in Valkey: %v", err)
 	}

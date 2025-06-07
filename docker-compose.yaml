@@ -1,0 +1,61 @@
+services:
+  db:
+    image: postgres:17.2
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: RootPassword
+      POSTGRES_DB: ti1
+    ports:
+      - "5432:5432"
+    volumes:
+      - /tmp/ti1/postgres_data:/var/lib/postgresql/data:z
+      - /tmp/ti1/init.sql:/docker-entrypoint-initdb.d/init.sql:ro,z
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "ti1", "-h", "db"]
+      interval: 10s
+      retries: 5
+    restart: always
+
+  valkey:
+    image: valkey/valkey:latest
+    container_name: valkey
+    environment:
+      VALKEY_PASSWORD: the_valkey_password
+    ports:
+      - "6379:6379"
+    volumes:
+      - /tmp/ti1/valkey_data:/data:z
+    networks:
+      - app-network
+    restart: always
+
+  ti1-container:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ti1-container
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: RootPassword
+      DB_NAME: ti1
+      DB_SSLMODE: disable
+      VALKEY_HOST: valkey
+      VALKEY_PORT: 6379
+      VALKEY_PASSWORD: the_valkey_password
+    depends_on:
+      db:
+        condition: service_healthy
+      valkey:
+        condition: service_started
+    networks:
+      - app-network
+    restart: always
+
+networks:
+  app-network:
+    driver: bridge
