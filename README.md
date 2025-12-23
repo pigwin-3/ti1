@@ -138,7 +138,7 @@ nano postgres_data/postgresql.conf
 Change the following values
 ```conf
 listen_addresses = '*'
-max_connections = 100
+max_connections = 200
 shared_buffers = 16GB
 work_mem = 256MB
 maintenance_work_mem = 2GB

@@ -48,10 +48,10 @@ jobs:
 
       - name: Push Docker image
         run: |
-          # If on v1.0 branch, push to 'testing.v1.0' tag
+          # If on v1.0 branch, push to 'testingv1.0' tag
           if [[ "${{ github.ref }}" == "refs/heads/v1.0" ]]; then
-            docker tag ti1:${{ env.VERSION }} ${{ secrets.DOCKER_USERNAME }}/ti1:testing-v1.0
-            docker push ${{ secrets.DOCKER_USERNAME }}/ti1:testing.v1.0
+            docker tag ti1:${{ env.VERSION }} ${{ secrets.DOCKER_USERNAME }}/ti1:testingv1.0
+            docker push ${{ secrets.DOCKER_USERNAME }}/ti1:testingv1.0
           else
             # Always push to 'dev' tag for main and dev branches
             docker tag ti1:${{ env.VERSION }} ${{ secrets.DOCKER_USERNAME }}/ti1:dev

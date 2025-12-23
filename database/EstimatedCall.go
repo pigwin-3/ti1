@@ -6,10 +6,17 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"sync"
 	"ti1/valki"
 
 	"github.com/valkey-io/valkey-go"
 )
+
+type CallResult struct {
+	ID     int
+	Action string
+	Error  error
+}
 
 func InsertOrUpdateEstimatedCall(ctx context.Context, db *sql.DB, values []interface{}, valkeyClient valkey.Client) (int, string, error) {
 	// Replace empty strings with nil for timestamp fields
@@ -28,19 +35,15 @@ func InsertOrUpdateEstimatedCall(ctx context.Context, db *sql.DB, values []inter
 	}
 	hash := md5.Sum([]byte(valuesString))
 	hashString := hex.EncodeToString(hash[:])
-	//fmt.Println("HashString:", hashString)
 
 	estimatedVehicleJourneyID := values[0]
 	orderID := values[1]
 	key := fmt.Sprintf("%v.%v", estimatedVehicleJourneyID, orderID)
-	//fmt.Printf("Estimated Vehicle Journey ID: %v, Order ID: %v\n", estimatedVehicleJourneyID, orderID)
-
-	var err error
 
 	// Get the MD5 hash from Valkey
 	retrievedHash, err := valki.GetValkeyValue(ctx, valkeyClient, key)
 	if err != nil {
-		return 0, "", fmt.Errorf("failed to get value from Valkey: %v", err)
+		return 0, "", fmt.Errorf("failed to get value from Valkey: %w", err)
 	}
 
 	// Check if the retrieved value matches the original MD5 hash
@@ -64,26 +67,60 @@ func InsertOrUpdateEstimatedCall(ctx context.Context, db *sql.DB, values []inter
                 estimated_data = EXCLUDED.estimated_data
             RETURNING CASE WHEN xmax = 0 THEN 'insert' ELSE 'update' END, id;
         `
-		stmt, err := db.Prepare(query)
-		if err != nil {
-			return 0, "", fmt.Errorf("error preparing statement: %v", err)
-		}
-		defer stmt.Close()
 
 		err = valki.SetValkeyValue(ctx, valkeyClient, key, hashString)
 		if err != nil {
-			return 0, "", fmt.Errorf("failed to set value in Valkey: %v", err)
+			return 0, "", fmt.Errorf("failed to set value in Valkey: %w", err)
 		}
 
 		var action string
 		var id int
-		err = stmt.QueryRow(values...).Scan(&action, &id)
+		err = db.QueryRowContext(ctx, query, values...).Scan(&action, &id)
 		if err != nil {
-			return 0, "", fmt.Errorf("error executing statement: %v", err)
+			return 0, "", fmt.Errorf("error executing statement: %w", err)
 		}
 		return id, action, nil
-	} else {
-		//fmt.Printf("MATCH!!! Original Hash: %s, Retrieved Hash: %s\n", hashString, retrievedHash)
-		return 0, "none", nil
 	}
+	return 0, "none", nil
+}
+
+// BatchInsertEstimatedCalls processes multiple estimated calls concurrently
+func BatchInsertEstimatedCalls(ctx context.Context, db *sql.DB, batch [][]interface{}, valkeyClient valkey.Client, workerCount int) ([]CallResult, error) {
+	if len(batch) == 0 {
+		return nil, nil
+	}
+
+	results := make([]CallResult, len(batch))
+	jobs := make(chan int, len(batch))
+	var wg sync.WaitGroup
+
+	// Start workers
+	for w := 0; w < workerCount; w++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for idx := range jobs {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+					id, action, err := InsertOrUpdateEstimatedCall(ctx, db, batch[idx], valkeyClient)
+					results[idx] = CallResult{
+						ID:     id,
+						Action: action,
+						Error:  err,
+					}
+				}
+			}
+		}()
+	}
+
+	// Send jobs
+	for i := range batch {
+		jobs <- i
+	}
+	close(jobs)
+
+	wg.Wait()
+	return results, nil
 }
