@@ -1,4 +1,4 @@
-package database
+package databaseold
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
-	"sync"
 	"ti1/valki"
 
 	"github.com/valkey-io/valkey-go"
@@ -34,10 +33,12 @@ func InsertOrUpdateRecordedCall(ctx context.Context, db *sql.DB, values []interf
 	orderID := values[1]
 	key := fmt.Sprintf("%v.%v", estimatedVehicleJourneyID, orderID)
 
+	var err error
+
 	// Get the MD5 hash from Valkey
 	retrievedHash, err := valki.GetValkeyValue(ctx, valkeyClient, key)
 	if err != nil {
-		return 0, "", fmt.Errorf("failed to get value from Valkey: %w", err)
+		return 0, "", fmt.Errorf("failed to get value from Valkey: %v", err)
 	}
 
 	// Check if the retrieved value matches the original MD5 hash
@@ -64,60 +65,25 @@ func InsertOrUpdateRecordedCall(ctx context.Context, db *sql.DB, values []interf
                 recorded_data = EXCLUDED.recorded_data
             RETURNING CASE WHEN xmax = 0 THEN 'insert' ELSE 'update' END, id;
         `
+		stmt, err := db.Prepare(query)
+		if err != nil {
+			return 0, "", fmt.Errorf("error preparing statement: %v", err)
+		}
+		defer stmt.Close()
 
 		err = valki.SetValkeyValue(ctx, valkeyClient, key, hashString)
 		if err != nil {
-			return 0, "", fmt.Errorf("failed to set value in Valkey: %w", err)
+			return 0, "", fmt.Errorf("failed to set value in Valkey: %v", err)
 		}
 
 		var action string
 		var id int
-		err = db.QueryRowContext(ctx, query, values...).Scan(&action, &id)
+		err = stmt.QueryRow(values...).Scan(&action, &id)
 		if err != nil {
-			return 0, "", fmt.Errorf("error executing statement: %w", err)
+			return 0, "", fmt.Errorf("error executing statement: %v", err)
 		}
 		return id, action, nil
+	} else {
+		return 0, "none", nil
 	}
-	return 0, "none", nil
-}
-
-// BatchInsertRecordedCalls processes multiple recorded calls concurrently
-func BatchInsertRecordedCalls(ctx context.Context, db *sql.DB, batch [][]interface{}, valkeyClient valkey.Client, workerCount int) ([]CallResult, error) {
-	if len(batch) == 0 {
-		return nil, nil
-	}
-
-	results := make([]CallResult, len(batch))
-	jobs := make(chan int, len(batch))
-	var wg sync.WaitGroup
-
-	// Start workers
-	for w := 0; w < workerCount; w++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for idx := range jobs {
-				select {
-				case <-ctx.Done():
-					return
-				default:
-					id, action, err := InsertOrUpdateRecordedCall(ctx, db, batch[idx], valkeyClient)
-					results[idx] = CallResult{
-						ID:     id,
-						Action: action,
-						Error:  err,
-					}
-				}
-			}
-		}()
-	}
-
-	// Send jobs
-	for i := range batch {
-		jobs <- i
-	}
-	close(jobs)
-
-	wg.Wait()
-	return results, nil
 }

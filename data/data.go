@@ -1,9 +1,12 @@
 package data
 
 import (
-	"log"
+	"crypto/tls"
 	"encoding/xml"
+	"fmt"
+	"log"
 	"net/http"
+	"time"
 )
 
 type Data struct {
@@ -127,23 +130,86 @@ type Data struct {
 }
 
 func FetchData(timestamp string) (*Data, error) {
-	client := &http.Client{}
+	// Configure HTTP client with timeout and HTTP/1.1 to avoid HTTP/2 stream errors
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			MinVersion: tls.VersionTLS12,
+		},
+		MaxIdleConns:          10,
+		MaxIdleConnsPerHost:   10,
+		IdleConnTimeout:       90 * time.Second,
+		DisableCompression:    false,
+		ForceAttemptHTTP2:     false, // Disable HTTP/2 to avoid stream errors
+		TLSHandshakeTimeout:   10 * time.Second,
+		ResponseHeaderTimeout: 30 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
+
+	client := &http.Client{
+		Transport: transport,
+		Timeout:   180 * time.Second, // 3 minute timeout for large datasets
+	}
+
 	requestorId := "ti1-" + timestamp
-
 	url := "https://api.entur.io/realtime/v1/rest/et?useOriginalId=true&maxSize=100000&requestorId=" + requestorId
-	log.Println("Fetching data from URL:", url)
-	resp, err := client.Get(url)
+
+	// Retry logic for transient failures
+	var resp *http.Response
+	var err error
+	var data *Data
+	maxRetries := 3
+
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		log.Printf("Fetching data from URL (attempt %d/%d): %s", attempt, maxRetries, url)
+
+		resp, err = client.Get(url)
+		if err != nil {
+			log.Printf("Request failed: %v", err)
+			if attempt < maxRetries {
+				waitTime := time.Duration(attempt*2) * time.Second
+				log.Printf("Retrying in %v...", waitTime)
+				time.Sleep(waitTime)
+			}
+			continue
+		}
+
+		// Check HTTP status code
+		if resp.StatusCode != http.StatusOK {
+			resp.Body.Close()
+			err = fmt.Errorf("HTTP error: %s (status code: %d)", resp.Status, resp.StatusCode)
+			log.Printf("%v", err)
+			if attempt < maxRetries {
+				waitTime := time.Duration(attempt*2) * time.Second
+				log.Printf("Retrying in %v...", waitTime)
+				time.Sleep(waitTime)
+			}
+			continue
+		}
+
+		// Try to decode the response
+		data = &Data{}
+		decoder := xml.NewDecoder(resp.Body)
+		err = decoder.Decode(data)
+		resp.Body.Close()
+
+		if err != nil {
+			log.Printf("Failed to decode XML: %v", err)
+			if attempt < maxRetries {
+				waitTime := time.Duration(attempt*2) * time.Second
+				log.Printf("Retrying in %v...", waitTime)
+				time.Sleep(waitTime)
+			}
+			continue
+		}
+
+		// Success!
+		log.Printf("Successfully fetched and decoded data")
+		return data, nil
+	}
+
+	// All retries failed
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
-
-	data := &Data{}
-	decoder := xml.NewDecoder(resp.Body)
-	err = decoder.Decode(data)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return nil, fmt.Errorf("Failed to fetch data after %d attempts", maxRetries)
 }

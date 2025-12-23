@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - dev
+      - v1.0
 
 jobs:
   build:
@@ -47,12 +48,18 @@ jobs:
 
       - name: Push Docker image
         run: |
-          # Always push to 'dev' tag
-          docker tag ti1:${{ env.VERSION }} ${{ secrets.DOCKER_USERNAME }}/ti1:dev
-          docker push ${{ secrets.DOCKER_USERNAME }}/ti1:dev
+          # If on v1.0 branch, push to 'testingv1.0' tag
+          if [[ "${{ github.ref }}" == "refs/heads/v1.0" ]]; then
+            docker tag ti1:${{ env.VERSION }} ${{ secrets.DOCKER_USERNAME }}/ti1:testingv1.0
+            docker push ${{ secrets.DOCKER_USERNAME }}/ti1:testingv1.0
+          else
+            # Always push to 'dev' tag for main and dev branches
+            docker tag ti1:${{ env.VERSION }} ${{ secrets.DOCKER_USERNAME }}/ti1:dev
+            docker push ${{ secrets.DOCKER_USERNAME }}/ti1:dev
 
-          # If the version is valid, also push that specific version tag
-          if [[ "${{ env.VERSION }}" != "dev" ]]; then
-            docker tag ti1:${{ env.VERSION }} ${{ secrets.DOCKER_USERNAME }}/ti1:${{ env.VERSION }}
-            docker push ${{ secrets.DOCKER_USERNAME }}/ti1:${{ env.VERSION }}
+            # If the version is valid, also push that specific version tag
+            if [[ "${{ env.VERSION }}" != "dev" ]]; then
+              docker tag ti1:${{ env.VERSION }} ${{ secrets.DOCKER_USERNAME }}/ti1:${{ env.VERSION }}
+              docker push ${{ secrets.DOCKER_USERNAME }}/ti1:${{ env.VERSION }}
+            fi
           fi
