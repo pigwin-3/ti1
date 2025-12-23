@@ -30,7 +30,7 @@ jobs:
       - name: Get commit version
         id: commit-version
         run: |
-          COMMIT_MSG=$(git log -1 --pretty=%B)
+          COMMIT_MSG=$(git log -1 --pretty=%B | head -n1 | xargs)
           echo "Commit message: $COMMIT_MSG"  # Debugging output
           # Updated regex to handle both vX.Y, vX.Y.Z, and vX.Y-pre-release formats
           if [[ "$COMMIT_MSG" =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?(-[a-zA-Z0-9._-]+)?$ ]]; then
