@@ -3,6 +3,7 @@ package data
 import (
 	"crypto/tls"
 	"encoding/xml"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -134,16 +135,19 @@ func FetchData(timestamp string) (*Data, error) {
 		TLSClientConfig: &tls.Config{
 			MinVersion: tls.VersionTLS12,
 		},
-		MaxIdleConns:        10,
-		IdleConnTimeout:     90 * time.Second,
-		DisableCompression:  false,
-		ForceAttemptHTTP2:   false, // Disable HTTP/2 to avoid stream errors
-		TLSHandshakeTimeout: 10 * time.Second,
+		MaxIdleConns:          10,
+		MaxIdleConnsPerHost:   10,
+		IdleConnTimeout:       90 * time.Second,
+		DisableCompression:    false,
+		ForceAttemptHTTP2:     false, // Disable HTTP/2 to avoid stream errors
+		TLSHandshakeTimeout:   10 * time.Second,
+		ResponseHeaderTimeout: 30 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
 	}
 
 	client := &http.Client{
 		Transport: transport,
-		Timeout:   120 * time.Second, // 2 minute timeout for large datasets
+		Timeout:   180 * time.Second, // 3 minute timeout for large datasets
 	}
 
 	requestorId := "ti1-" + timestamp
@@ -152,33 +156,60 @@ func FetchData(timestamp string) (*Data, error) {
 	// Retry logic for transient failures
 	var resp *http.Response
 	var err error
+	var data *Data
 	maxRetries := 3
 
 	for attempt := 1; attempt <= maxRetries; attempt++ {
 		log.Printf("Fetching data from URL (attempt %d/%d): %s", attempt, maxRetries, url)
+
 		resp, err = client.Get(url)
-		if err == nil {
-			break
+		if err != nil {
+			log.Printf("Request failed: %v", err)
+			if attempt < maxRetries {
+				waitTime := time.Duration(attempt*2) * time.Second
+				log.Printf("Retrying in %v...", waitTime)
+				time.Sleep(waitTime)
+			}
+			continue
 		}
-		log.Printf("Request failed: %v", err)
-		if attempt < maxRetries {
-			waitTime := time.Duration(attempt*2) * time.Second
-			log.Printf("Retrying in %v...", waitTime)
-			time.Sleep(waitTime)
+
+		// Check HTTP status code
+		if resp.StatusCode != http.StatusOK {
+			resp.Body.Close()
+			err = fmt.Errorf("HTTP error: %s (status code: %d)", resp.Status, resp.StatusCode)
+			log.Printf("%v", err)
+			if attempt < maxRetries {
+				waitTime := time.Duration(attempt*2) * time.Second
+				log.Printf("Retrying in %v...", waitTime)
+				time.Sleep(waitTime)
+			}
+			continue
 		}
+
+		// Try to decode the response
+		data = &Data{}
+		decoder := xml.NewDecoder(resp.Body)
+		err = decoder.Decode(data)
+		resp.Body.Close()
+
+		if err != nil {
+			log.Printf("Failed to decode XML: %v", err)
+			if attempt < maxRetries {
+				waitTime := time.Duration(attempt*2) * time.Second
+				log.Printf("Retrying in %v...", waitTime)
+				time.Sleep(waitTime)
+			}
+			continue
+		}
+
+		// Success!
+		log.Printf("Successfully fetched and decoded data")
+		return data, nil
 	}
 
+	// All retries failed
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
-
-	data := &Data{}
-	decoder := xml.NewDecoder(resp.Body)
-	err = decoder.Decode(data)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return nil, fmt.Errorf("Failed to fetch data after %d attempts", maxRetries)
 }
