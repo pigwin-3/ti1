@@ -1,9 +1,11 @@
 package data
 
 import (
-	"log"
+	"crypto/tls"
 	"encoding/xml"
+	"log"
 	"net/http"
+	"time"
 )
 
 type Data struct {
@@ -127,12 +129,45 @@ type Data struct {
 }
 
 func FetchData(timestamp string) (*Data, error) {
-	client := &http.Client{}
-	requestorId := "ti1-" + timestamp
+	// Configure HTTP client with timeout and HTTP/1.1 to avoid HTTP/2 stream errors
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			MinVersion: tls.VersionTLS12,
+		},
+		MaxIdleConns:        10,
+		IdleConnTimeout:     90 * time.Second,
+		DisableCompression:  false,
+		ForceAttemptHTTP2:   false, // Disable HTTP/2 to avoid stream errors
+		TLSHandshakeTimeout: 10 * time.Second,
+	}
 
+	client := &http.Client{
+		Transport: transport,
+		Timeout:   120 * time.Second, // 2 minute timeout for large datasets
+	}
+
+	requestorId := "ti1-" + timestamp
 	url := "https://api.entur.io/realtime/v1/rest/et?useOriginalId=true&maxSize=100000&requestorId=" + requestorId
-	log.Println("Fetching data from URL:", url)
-	resp, err := client.Get(url)
+
+	// Retry logic for transient failures
+	var resp *http.Response
+	var err error
+	maxRetries := 3
+
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		log.Printf("Fetching data from URL (attempt %d/%d): %s", attempt, maxRetries, url)
+		resp, err = client.Get(url)
+		if err == nil {
+			break
+		}
+		log.Printf("Request failed: %v", err)
+		if attempt < maxRetries {
+			waitTime := time.Duration(attempt*2) * time.Second
+			log.Printf("Retrying in %v...", waitTime)
+			time.Sleep(waitTime)
+		}
+	}
+
 	if err != nil {
 		return nil, err
 	}
