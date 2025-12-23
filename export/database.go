@@ -11,6 +11,7 @@ import (
 	"ti1/config"
 	"ti1/data"
 	"ti1/database"
+	"time"
 )
 
 // DBData is the main entry point for data processing
@@ -44,6 +45,9 @@ func DBDataOptimized(data *data.Data) {
 		log.Fatal(err)
 	}
 	fmt.Println("SID:", sid)
+
+	// Record start time
+	startTime := time.Now()
 
 	// Atomic counters for thread-safe counting
 	var insertCount, updateCount, estimatedCallInsertCount, estimatedCallUpdateCount, estimatedCallNoneCount, recordedCallInsertCount, recordedCallUpdateCount, recordedCallNoneCount int64
@@ -444,6 +448,9 @@ func DBDataOptimized(data *data.Data) {
 	close(recordedCallJobs)
 	callWg.Wait()
 
+	// Record end time
+	endTime := time.Now()
+
 	// Print final stats
 	fmt.Printf(
 		"\nDONE: EVJ - Inserts: %d, Updates: %d, Total: %d\n"+
@@ -470,6 +477,9 @@ func DBDataOptimized(data *data.Data) {
 	serviceDeliveryJsonObject["RecordedCallInserts"] = atomic.LoadInt64(&recordedCallInsertCount)
 	serviceDeliveryJsonObject["RecordedCallUpdates"] = atomic.LoadInt64(&recordedCallUpdateCount)
 	serviceDeliveryJsonObject["RecordedCallNone"] = atomic.LoadInt64(&recordedCallNoneCount)
+	serviceDeliveryJsonObject["StartTime"] = startTime.Format(time.RFC3339)
+	serviceDeliveryJsonObject["EndTime"] = endTime.Format(time.RFC3339)
+	serviceDeliveryJsonObject["Duration"] = endTime.Sub(startTime).String()
 
 	// Convert JSON object to JSON string
 	serviceDeliveryJsonString, err := json.Marshal(serviceDeliveryJsonObject)
