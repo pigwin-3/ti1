@@ -28,8 +28,8 @@ func ConnectToPostgreSQL() (*sql.DB, error) {
 	}
 
 	// Set connection pool settings for high concurrency
-	db.SetMaxOpenConns(100)                // Maximum number of open connections to the database
-	db.SetMaxIdleConns(50)                 // Maximum number of connections in the idle connection pool
+	db.SetMaxOpenConns(50)                 // Maximum number of open connections to the database
+	db.SetMaxIdleConns(25)                 // Maximum number of connections in the idle connection pool
 	db.SetConnMaxLifetime(1 * time.Hour)   // Maximum amount of time a connection may be reused
 	db.SetConnMaxIdleTime(5 * time.Minute) // Maximum amount of time a connection may be idle
 

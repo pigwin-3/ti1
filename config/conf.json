@@ -10,7 +10,7 @@
     "valkey": {
 		"host": "127.0.0.1",
 		"port": "6379",
-		"max_conns": 110,
+		"max_conns": 100,
 		"timeout_ms": 2000,
         	"password": "the_valkey_password"
 	},
