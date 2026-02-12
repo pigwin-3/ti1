@@ -34,9 +34,9 @@ func main() {
 
 		log.Println("finished in", time.Since(start))
 		elapsed := time.Since(start)
-		if elapsed < 5*time.Minute {
-			log.Printf("starting again in %v", 5*time.Minute-elapsed)
-			time.Sleep(5*time.Minute - elapsed)
+		if elapsed < 4*time.Minute {
+			log.Printf("starting again in %v", 4*time.Minute-elapsed)
+			time.Sleep(4*time.Minute - elapsed)
 		}
 	}
 }
